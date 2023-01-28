@@ -5,10 +5,11 @@ import {
   Scene,
   Tools,
   Ray,
-  RayHelper
+  RayHelper,
 } from "babylonjs";
 import Controller from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
+import playerImageTest from "../../demoassets/player/player_02.png";
 
 export default class Player extends TexturedFacingPlane {
   constructor(
@@ -20,14 +21,7 @@ export default class Player extends TexturedFacingPlane {
     rotation: Vector3 = new Vector3(0, 0, 0),
     speed: number = 2000
   ) {
-    super(
-      scene,
-      "/demoassets/player/player_02.png",
-      width,
-      height,
-      position,
-      rotation
-    );
+    super(scene, playerImageTest, width, height, position, rotation);
     //units per second
     this.speed = speed;
   }
