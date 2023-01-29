@@ -3,24 +3,23 @@ import { Vector3 } from "babylonjs";
 export default class PlayerController extends Controller {
   //https://www.babylonjs-playground.com/#3EDS3A#96
   managePointerLock() {
-    const self = this;
     // Pointer lock
     let isLocked = false;
-    this.scene.onPointerDown = function (evt) {
+    this.scene.onPointerDown = (evt) => {
       if (!isLocked) {
-        self.canvas.requestPointerLock =
-          self.canvas.requestPointerLock ||
-          self.canvas.msRequestPointerLock ||
-          self.canvas.mozRequestPointerLock ||
-          self.canvas.webkitRequestPointerLock;
-        if (self.canvas.requestPointerLock) {
-          self.canvas.requestPointerLock();
+        this.canvas.requestPointerLock =
+          this.canvas.requestPointerLock ||
+          this.canvas.msRequestPointerLock ||
+          this.canvas.mozRequestPointerLock ||
+          this.canvas.webkitRequestPointerLock;
+        if (this.canvas.requestPointerLock) {
+          this.canvas.requestPointerLock();
           return;
         }
       }
     };
 
-    const pointerlockchange = function () {
+    const pointerlockchange = () => {
       // @ts-ignore
       const controlEnabled =
         document.mozPointerLockElement ||
@@ -45,40 +44,39 @@ export default class PlayerController extends Controller {
   }
 
   listenInput() {
-    const self = this;
-    this.scene.onBeforeRenderObservable.add(function () {
-      self.displacement = Vector3.Zero();
+    this.scene.onBeforeRenderObservable.add(() => {
+      this.displacement = Vector3.Zero();
 
       //var keydown = false;
-      if (self.inputMap["w"]) {
-        self.displacement.addInPlace(Vector3.Forward());
+      if (this.inputMap["w"]) {
+        this.displacement.addInPlace(Vector3.Forward());
         //newMeshes[0].rotation.y = 0
         //keydown=true;
       }
-      if (self.inputMap["a"]) {
-        self.displacement.addInPlace(Vector3.Left());
+      if (this.inputMap["a"]) {
+        this.displacement.addInPlace(Vector3.Left());
         //newMeshes[0].rotation.y = 3*Math.PI/2
         //keydown=true;
       }
-      if (self.inputMap["s"]) {
-        self.displacement.addInPlace(Vector3.Backward());
+      if (this.inputMap["s"]) {
+        this.displacement.addInPlace(Vector3.Backward());
         //newMeshes[0].rotation.y = 2*Math.PI/2
         //keydown=true;
       }
 
-      if (self.inputMap["d"]) {
-        self.displacement.addInPlace(Vector3.Right());
+      if (this.inputMap["d"]) {
+        this.displacement.addInPlace(Vector3.Right());
         //newMeshes[0].rotation.y = Math.PI/2
         //keydown=true;
       }
 
-      if (self.inputMap[" "]) {
-        self.displacement.addInPlace(Vector3.Up());
+      if (this.inputMap[" "]) {
+        this.displacement.addInPlace(Vector3.Up());
         //newMeshes[0].rotation.y = Math.PI/2
         //keydown=true;
       }
-      if (self.inputMap["Shift"]) {
-        self.displacement.addInPlace(Vector3.Down());
+      if (this.inputMap["Shift"]) {
+        this.displacement.addInPlace(Vector3.Down());
         //newMeshes[0].rotation.y = Math.PI/2
         //keydown=true;
       }
@@ -92,7 +90,7 @@ export default class PlayerController extends Controller {
           animating = false;
           scene.stopAnimation(skeleton)
       }*/
-      self.move();
+      this.move();
     });
   }
 }
