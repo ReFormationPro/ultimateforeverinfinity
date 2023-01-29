@@ -5,8 +5,9 @@
   "main": "index.html",
   "scripts": {
     "clean": "tslint -c tslint.json 'src/**/*.ts' --fix",
-    "start": "parcel serve index.html",
-    "build": "parcel build index.html"
+    "start": "parcel serve index.html --open",
+    "build": "parcel build index.html",
+    "cs_start": "parcel serve index.html"
   },
   "dependencies": {
     "@types/cannon": "0.1.8",
