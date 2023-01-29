@@ -4,24 +4,23 @@ import { BoxCollider } from "../objects/Collider";
 export default class PlayerController extends Controller {
   //https://www.babylonjs-playground.com/#3EDS3A#96
   managePointerLock() {
-    const self = this;
     // Pointer lock
     let isLocked = false;
-    this.scene.onPointerDown = function (evt) {
+    this.scene.onPointerDown = (evt) => {
       if (!isLocked) {
-        self.canvas.requestPointerLock =
-          self.canvas.requestPointerLock ||
-          self.canvas.msRequestPointerLock ||
-          self.canvas.mozRequestPointerLock ||
-          self.canvas.webkitRequestPointerLock;
-        if (self.canvas.requestPointerLock) {
-          self.canvas.requestPointerLock();
+        this.canvas.requestPointerLock =
+          this.canvas.requestPointerLock ||
+          this.canvas.msRequestPointerLock ||
+          this.canvas.mozRequestPointerLock ||
+          this.canvas.webkitRequestPointerLock;
+        if (this.canvas.requestPointerLock) {
+          this.canvas.requestPointerLock();
           return;
         }
       }
     };
 
-    const pointerlockchange = function () {
+    const pointerlockchange = () => {
       // @ts-ignore
       const controlEnabled =
         document.mozPointerLockElement ||
@@ -46,28 +45,27 @@ export default class PlayerController extends Controller {
   }
 
   listenInput() {
-    const self = this;
-    this.scene.onBeforeRenderObservable.add(function () {
-      self.displacement = Vector3.Zero();
-      const boxCollider: BoxCollider = <BoxCollider>self.player.collider;
+    this.scene.onBeforeRenderObservable.add(() => {
+      this.displacement = Vector3.Zero();
+      const boxCollider: BoxCollider = <BoxCollider>this.player.collider;
 
-      if (self.inputMap["w"]) {
-        self.displacement.addInPlace(Vector3.Forward());
+      if (this.inputMap["w"]) {
+        this.displacement.addInPlace(Vector3.Forward());
       }
-      if (self.inputMap["a"]) {
-        self.displacement.addInPlace(Vector3.Left());
+      if (this.inputMap["a"]) {
+        this.displacement.addInPlace(Vector3.Left());
       }
-      if (self.inputMap["s"]) {
-        self.displacement.addInPlace(Vector3.Backward());
+      if (this.inputMap["s"]) {
+        this.displacement.addInPlace(Vector3.Backward());
       }
 
-      if (self.inputMap["d"]) {
-        self.displacement.addInPlace(Vector3.Right());
+      if (this.inputMap["d"]) {
+        this.displacement.addInPlace(Vector3.Right());
       }
-      if (self.inputMap[" "] && boxCollider.onObject) {
-        self.displacement.addInPlace(Vector3.Up());
+      if (this.inputMap[" "] && boxCollider.onObject) {
+        this.displacement.addInPlace(Vector3.Up());
       }
-      self.move();
+      this.move();
     });
   }
 }

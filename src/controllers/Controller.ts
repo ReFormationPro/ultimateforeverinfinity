@@ -8,7 +8,6 @@ export default abstract class Controller {
   scene: Scene;
 
   constructor(scene: Scene, canvas: any) {
-    const self = this;
     this.scene = scene;
     this.canvas = canvas;
 
@@ -16,13 +15,13 @@ export default abstract class Controller {
     scene.actionManager = new ActionManager(scene);
 
     scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, function (evt) {
-        self.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+      new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
+        this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
       })
     );
     scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, function (evt) {
-        self.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+        this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
       })
     );
   }

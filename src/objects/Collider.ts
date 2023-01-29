@@ -6,7 +6,7 @@ import {
   Color3,
   StandardMaterial,
   Ray,
-  RayHelper
+  RayHelper,
 } from "babylonjs";
 import EntityObject from "./EntityObject";
 import Player from "./Player";
@@ -84,7 +84,7 @@ export class BoxCollider extends Collider {
     this.mesh = MeshBuilder.CreateBox(this.name, {
       width: this.width,
       height: this.height,
-      depth: this.depth
+      depth: this.depth,
     });
     this.mesh.position = position;
     this.mesh.isPickable = false;
@@ -104,14 +104,13 @@ export class BoxCollider extends Collider {
   }
   detect(other: EntityObject) {
     super.detect(other);
-    const self = this;
-    this.scene.onBeforeRenderObservable.add(function () {
-      const [u, v, w] = self.obj.calcRelativeAxes();
-      const pick = self.scene.pickWithRay(self.ray);
+    this.scene.onBeforeRenderObservable.add(() => {
+      const [u, v, w] = this.obj.calcRelativeAxes();
+      const pick = this.scene.pickWithRay(this.ray);
       if (pick) {
-        self.onObject = pick.hit;
+        this.onObject = pick.hit;
       }
-      //console.log(`onObject: ${self.onObject}`);
+      //console.log(`onObject: ${this.onObject}`);
     });
   }
 }
