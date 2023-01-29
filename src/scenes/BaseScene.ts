@@ -17,7 +17,7 @@ export default class BaseScene extends Scene {
     physEngine.setTimeStep(1 / FPS_COUNT_);
 
     // This creates and positions a free camera (non-mesh)
-    this.player = new Player(this, canvas, new Vector3(0, 10, 0));
+    this.player = new Player(this);
     this.controller = new SpectatorViewController(this, canvas);
 
     this.player.addController(this.controller);

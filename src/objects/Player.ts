@@ -14,10 +14,9 @@ import playerImageTest from "../../demoassets/player/player_02.png";
 export default class Player extends TexturedFacingPlane {
   constructor(
     scene: Scene,
-    canvas: any,
-    position: Vector3 = new Vector3(0, height / 2, 0),
     width: number = 3,
     height: number = 3,
+    position: Vector3 = new Vector3(0, height / 2, 0),
     rotation: Vector3 = new Vector3(0, 0, 0),
     speed: number = 2000
   ) {
