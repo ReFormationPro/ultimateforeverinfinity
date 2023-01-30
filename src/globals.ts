@@ -1,2 +1,10 @@
+import { Vector3 } from "babylonjs";
+import EntityObject from "./objects/EntityObject";
+import PLAYER_IMG_DIR from "../demoassets/player/player_02.png";
+
+const PLAYER_DIR = "../../demoassets/player"
 const FPS_COUNT_: number = 60;
-export { FPS_COUNT_ };
+//Time step or latency
+const TIME_STEP_: number = 1 / FPS_COUNT_;
+const GRAVITY = new Vector3(0, -9.8 * FPS_COUNT_, 0)
+export { FPS_COUNT_, GRAVITY, PLAYER_IMG_DIR, PLAYER_DIR, TIME_STEP_ };
