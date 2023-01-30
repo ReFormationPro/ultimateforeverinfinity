@@ -14,56 +14,86 @@ import Player from "./Player";
 export class Collider extends EntityObject {
   obj: EntityObject;
   //4 Physics
-  compoundMesh: Mesh = undefined;
   collided: boolean = false;
-  isWireframe: boolean;
-  wireframeColor: Color3;
+  highlightColor: Color3;
   constructor(
     scene: Scene,
-    isWireframe: boolean = false,
-    wireframeColor: Color3 = Color3.Blue()
+    position: Vector3 = null,
+    rotation: Vector3 = null,
+    highlightColor: Color3 = null
   ) {
-    super(scene, "collider");
-    this.isWireframe = isWireframe;
-    this.wireframeColor = wireframeColor;
+    super(scene, "collider", position, rotation);
+    this.highlightColor = highlightColor;
   }
   createMaterialIfNull() {
     if (this.mesh.material === undefined || this.mesh.material === null) {
       const colliderMat = new StandardMaterial("Mesh Material", this.scene);
-      colliderMat.diffuseColor = this.wireframeColor;
+      if (this.highlightColor === null) {
+        colliderMat.alpha = 0;
+      }
+      else {
+        colliderMat.diffuseColor = this.highlightColor;
+        colliderMat.alpha = 0.1;
+        colliderMat.wireframe = true;
+      }
       this.mesh.material = colliderMat;
     }
   }
-  makeTransparent() {
-    this.createMaterialIfNull();
-    this.mesh.material.alpha = 0.1;
-  }
-  makeWireframeIfEnabled() {
-    if (this.isWireframe) {
-      this.createMaterialIfNull();
-      this.mesh.material.wireframe = true;
-    }
-  }
-  // Children should implement this
-  detect(other: EntityObject) {
-    this.addRayDown();
-  }
   activate() {
-    this.makeTransparent();
-    this.makeWireframeIfEnabled();
+    this.createMaterialIfNull();
   }
-  //children should implement this
-  addRayDown() {}
+  createMesh() { }
+  setMeshPosition() { }
 }
 
-export class BoxCollider extends Collider {
+export class JumpCollider extends Collider {
   ray: Ray;
   rayHelper: RayHelper;
+  height: number;
 
   onObject: boolean = false;
+  static LAMBDA = 0.01;
 
+  constructor(
+    scene: Scene,
+    height: number,
+    position: Vector3 = null,
+    rotation: Vector3 = null,
+    highlightColor: Color3 = null,
+  ) {
+    super(scene, position, rotation, highlightColor);
+    this.height = height;
+  }
+
+  addRayDown() {
+    this.ray = new Ray();
+    this.rayHelper = new RayHelper(this.ray);
+    this.rayHelper.attachToMesh(
+      this.obj.mesh,
+      Vector3.Down(),
+      new Vector3(0, -JumpCollider.LAMBDA, 0),
+      this.height / 2
+    );
+    if (this.highlightColor !== null) {
+      this.rayHelper.show(this.scene, this.highlightColor);
+    }
+
+    this.scene.onBeforeRenderObservable.add(() => {
+      const pick = this.scene.pickWithRay(this.ray);
+      if (pick) {
+        this.onObject = pick.hit;
+        // console.log(`this.onObject: ${this.onObject}`);
+      }
+    });
+  }
+
+  createMesh() {
+    this.addRayDown();
+  }
+}
+
+export class BoxCollider extends JumpCollider {
   width: number;
-  height: number;
   depth: number;
 
   constructor(
@@ -71,47 +101,26 @@ export class BoxCollider extends Collider {
     width: number,
     height: number,
     depth: number,
-    position: Vector3 = undefined,
-    isWireframe: boolean = false,
-    wireframeColor: Color3 = Color3.Blue()
+    position: Vector3 = null,
+    rotation: Vector3 = null,
+    highlightColor: Color3 = null,
   ) {
-    super(scene, isWireframe, wireframeColor);
+    super(scene, height, position, rotation, highlightColor);
 
     this.width = width;
-    this.height = height;
     this.depth = depth;
-
+  }
+  createMesh() {
+    super.createMesh();
     this.mesh = MeshBuilder.CreateBox(this.name, {
       width: this.width,
       height: this.height,
       depth: this.depth
     });
-    this.mesh.position = position;
+
     this.mesh.isPickable = false;
   }
-  addRayDown() {
-    const height2 = this.height / 2;
-
-    this.ray = new Ray();
-    this.rayHelper = new RayHelper(this.ray);
-    this.rayHelper.attachToMesh(
-      this.mesh,
-      Vector3.Down(),
-      this.mesh.position.subtract(new Vector3(0, height2, 0)),
-      height2
-    );
-    this.rayHelper.show(this.scene, BABYLON.Color3.Red());
-  }
-  detect(other: EntityObject) {
-    super.detect(other);
-    const self = this;
-    this.scene.onBeforeRenderObservable.add(function () {
-      const [u, v, w] = self.obj.calcRelativeAxes();
-      const pick = self.scene.pickWithRay(self.ray);
-      if (pick) {
-        self.onObject = pick.hit;
-      }
-      //console.log(`onObject: ${self.onObject}`);
-    });
+  setMeshPosition() {
+    this.mesh.position = (this.position === null) ? Vector3.Zero() : this.position;
   }
 }
