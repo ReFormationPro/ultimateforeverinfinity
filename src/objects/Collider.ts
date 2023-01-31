@@ -53,16 +53,29 @@ export class JumpCollider extends Collider {
 
   onObject: boolean = false;
   static LAMBDA = 0.01;
-
+  // Rising threshold in seconds
+  risingDuration: number;
+  time: number;
   constructor(
     scene: Scene,
     height: number,
     position: Vector3 = null,
     rotation: Vector3 = null,
     highlightColor: Color3 = null,
+    risingDuration: number = 5
   ) {
     super(scene, position, rotation, highlightColor);
     this.height = height;
+    this.risingDuration = risingDuration * 1000;
+    this.time = 0;
+  }
+
+  callbackOnRisingDurationComplete(deltaTime: number, callback: () => void,) {
+    this.time += deltaTime;
+    if (this.time >= this.risingDuration) {
+      callback();
+      this.time = 0;
+    }
   }
 
   addRayDown() {
