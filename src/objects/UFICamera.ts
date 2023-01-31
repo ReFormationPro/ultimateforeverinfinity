@@ -7,13 +7,13 @@ export default class UFICamera extends EntityObject {
     scene: Scene,
     canvas: any,
     position: Vector3 = undefined,
-    radius = 20,
+    radius = 10,
     lowerAlphaLimitDegrees = undefined,
     upperAlphaLimitDegrees = undefined,
     lowerBetaLimitDegrees = 45,
     upperBetaLimitDegrees = 135,
-    lowerRadiusLimit = 10,
-    upperRadiusLimit = 50,
+    lowerRadiusLimit = 5,
+    upperRadiusLimit = 25,
     angularSensibilityX = 500,
     angularSensibilityY = 500,
   ) {
@@ -21,7 +21,7 @@ export default class UFICamera extends EntityObject {
 
     this.camObj = new ArcRotateCamera(
       "camera1",
-      BABYLON.Tools.ToRadians(-90),
+      BABYLON.Tools.ToRadians(90),
       BABYLON.Tools.ToRadians(90),
       0,
       position,
