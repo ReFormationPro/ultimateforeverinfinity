@@ -1,10 +1,9 @@
-import { DynamicTexture, Scene, StandardMaterial, Texture, Vector3 } from "babylonjs";
-import FacingPlane from "./FacingPlane";
+import { AssetsManager, DynamicTexture, Scene, StandardMaterial, TextFileAssetTask, Texture, Vector3 } from "babylonjs";
 import UFIPlane from "./UFIPlane";
 
 export default class TexturedPlane extends UFIPlane {
   dynamicTexture: DynamicTexture;
-
+  spriteMap: SpriteMap
   constructor(
     scene: Scene,
     url: string,
@@ -36,10 +35,12 @@ export default class TexturedPlane extends UFIPlane {
     this.draw(url);
   }
   draw(url: string) {
+    // console.log(url);
+
     var ctx = this.dynamicTexture.getContext();
     var img = new Image();
     img.src = url;
-    console.log(img, url);
+    // console.log(img, url);
     const self = this;
     img.onload = function () {
       ctx.drawImage(this, 0, 0);
