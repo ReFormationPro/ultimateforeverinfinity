@@ -7,7 +7,7 @@
 # dependencies
 /node_modules
 .cache/
-yarn.lock
+yarn*
 package-lock.json
 
 # IDEs and editors
@@ -17,7 +17,7 @@ package-lock.json
 .c9/
 *.launch
 .settings/
-
+**/*.tps
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

@@ -7,8 +7,10 @@ import EntityObject from "../objects/EntityObject";
 import { FPS_COUNT_, GRAVITY, TIME_STEP_ } from "../globals";
 export default class BaseScene extends Scene {
   physEngine: IPhysicsEnginePlugin;
+  canvas: any;
   constructor(engine: Engine, canvas: any) {
     super(engine);
+    this.canvas = canvas;
     this.physEngine = new CannonJSPlugin(true, 10, CANNON);
   }
   addPhysics() {

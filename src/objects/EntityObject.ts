@@ -1,10 +1,9 @@
-import { Camera, Matrix, Mesh, PhysicsImpostor } from "babylonjs";
+import { AssetsManager, Camera, DynamicTexture, ISpriteJSONAtlas, Material, Matrix, Mesh, PhysicsImpostor, SpriteMap, StandardMaterial, TextFileAssetTask, Texture, Vector2 } from "babylonjs";
 import { Scene, Vector3 } from "babylonjs";
 import Player from "./Player";
 import { BoxCollider, Collider, JumpCollider } from "./Collider";
 import UFICamera from "./UFICamera";
 import { FPS_COUNT_ } from "../globals";
-import UFIAnimationManager from "./UFIAnimation";
 import { UFICommand } from "../controllers/Controller";
 // All EntityObject instances can move
 export default class EntityObject {
@@ -12,7 +11,9 @@ export default class EntityObject {
   compoundMesh: Mesh = undefined;
   cam: UFICamera = undefined;
   collider: Collider = undefined;
-  animationManager: UFIAnimationManager = undefined;
+  texture: Texture = undefined;
+  material: Material = undefined;
+  spriteMap: SpriteMap = undefined;
 
   name: string;
   static index = 0;
@@ -62,8 +63,78 @@ export default class EntityObject {
     camMesh.position = Vector3.Zero();
     this.cam.camObj.lockedTarget = camMesh;
   }
-  setAnimation(animationManager: UFIAnimationManager) {
-    this.animationManager = animationManager;
+  setTexture(
+    url: string,
+    noMipMaps: boolean = false,
+    samplingMode: number = Texture.NEAREST_NEAREST
+  ) {
+    console.log(url);
+    // Load the spritesheet (with appropriate settings) associated with the JSON Atlas.
+    this.texture = new Texture(url, this.scene,
+      noMipMaps, //NoMipMaps
+      false, //InvertY usually false if exported from TexturePacker
+      samplingMode, //Sampling Mode
+      null, //Onload, you could spin up the sprite map in a function nested here
+      null, //OnError
+      null, //CustomBuffer
+      false, //DeleteBuffer
+      BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA
+    );
+  }
+  async mapSprites(
+    atlasJSON: ISpriteJSONAtlas,
+    maxAnimationFrames = 2
+  ) {
+    this.spriteMap = new SpriteMap(
+      `${this.name}SpriteMap`,
+      atlasJSON, this.texture, {
+      maxAnimationFrames: maxAnimationFrames,
+      stageSize: new Vector2(1, 1),
+      flipU: true
+    }, this.scene
+    )
+  }
+  drawSprite(spriteIndex: number = 0) {
+    this.spriteMap.changeTiles(0, new Vector2(0, 0), spriteIndex)
+  }
+  setDynamicTexture(
+    width: number = 64,
+    height: number = width,
+    generateMipMaps: boolean = true,
+    samplingMode: number = Texture.NEAREST_NEAREST
+  ) {
+    this.material = new StandardMaterial(
+      `${this.name}Material`,
+      this.scene
+    );
+
+    this.texture = new DynamicTexture(
+      `${this.name}Texture`,
+      { width: width, height: height },
+      this.scene,
+      generateMipMaps,
+      samplingMode
+    );
+
+    const stdMat = <StandardMaterial>this.material;
+    stdMat.diffuseTexture = this.texture;
+    stdMat.diffuseTexture.hasAlpha = true;
+    // stdMat.backFaceCulling = true;
+    this.mesh.material = stdMat;
+  }
+  drawDynamicTexture(url: string) {
+    console.log(url);
+    const dynamicTexture = <DynamicTexture>this.texture
+
+    var ctx = dynamicTexture.getContext();
+    var img = new Image();
+    img.src = url;
+    // console.log(img, url);
+    const self = this;
+    img.onload = function () {
+      ctx.drawImage(this, 0, 0);
+      dynamicTexture.update();
+    }
   }
   setCollider(collider: Collider, isFacingCamera: boolean = true) {
     this.collider = collider;
@@ -149,7 +220,6 @@ export default class EntityObject {
   }
   move(command: UFICommand) {
     const deltaTime = this.calcDeltaTime();
-    this.animateFrame(command, deltaTime);
     const [u, v, w] = this.calcAxesRef(command.negTarget, command.up);
 
     // console.log(`u: ${u}`);
@@ -216,9 +286,4 @@ export default class EntityObject {
       }
     }
   }
-  //children should implement these
-  draw(url: string) {
-    console.log(url);
-  }
-  animateFrame(command: UFICommand, deltaTime: number) { }
 }
