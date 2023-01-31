@@ -1,4 +1,4 @@
-import TexturedFacingPlane from "./TexturedFacingPlane";
+import TexturedPlane from "./TexturedPlane";
 import {
   ArcRotateCamera,
   Vector3,
@@ -7,27 +7,34 @@ import {
   Ray,
   RayHelper,
 } from "babylonjs";
-import Controller from "../controllers/Controller";
+import { Controller, UFICommand } from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
-import playerImageTest from "../../demoassets/player/player_02.png";
+import { PLAYER_IMG_DIR, PLAYER_DIR } from "../globals";
 
-export default class Player extends TexturedFacingPlane {
+export default class Player extends TexturedPlane {
   constructor(
     scene: Scene,
-    canvas: any,
+    url: string = PLAYER_IMG_DIR,
+    width: number = 1,
+    height: number = 1,
     position: Vector3 = new Vector3(0, height / 2, 0),
-    width: number = 3,
-    height: number = 3,
     rotation: Vector3 = new Vector3(0, 0, 0),
-    speed: number = 2000
+    speed: number = 5,
+    jumpSpeed: number = 60,
   ) {
-    super(scene, playerImageTest, width, height, position, rotation);
+    super(scene, url, width, height, position, rotation, true);
+    // console.log(`url: ${url}`);
+
     //units per second
     this.speed = speed;
+    this.jumpSpeed = jumpSpeed;
+    this.mesh.isPickable = false;
   }
   addController(controller: Controller) {
     controller.player = this;
-    controller.listenInput();
+    this.scene.onBeforeRenderObservable.add(() => {
+      controller.listenInput();
+    });
     const playerController = <PlayerController>controller;
     if (
       playerController.managePointerLock !== undefined &&
@@ -36,21 +43,19 @@ export default class Player extends TexturedFacingPlane {
       playerController.managePointerLock();
     }
   }
-  calcRelativeAxes(): Array<Vector3> {
-    //w = -g is the negated unit gaze vector
-    const meshPosition: Vector3 =
-      this.compoundMesh === undefined
-        ? this.mesh.position
-        : this.compoundMesh.position;
 
-    const w: Vector3 = this.cam.camObj.position
-      .subtract(meshPosition)
-      .normalize();
-
-    // we need w parallel to the ground
-    w.y = 0;
-    //u is the unit right direction
-    const u: Vector3 = Vector3.Cross(this.v, w);
-    return [u, this.v, w];
+  animateFrame(command: UFICommand, deltaTime: number) {
+    if (command.displacement.equals(Vector3.Forward())) {
+      this.animationManager.anims.walkForward.animateFrame(deltaTime, this);
+    }
+    if (command.displacement.equals(Vector3.Backward())) {
+      this.animationManager.anims.walkBackward.animateFrame(deltaTime, this);
+    }
+    if (command.displacement.equals(Vector3.Left())) {
+      this.animationManager.anims.walkLeft.animateFrame(deltaTime, this);
+    }
+    if (command.displacement.equals(Vector3.Right())) {
+      this.animationManager.anims.walkRight.animateFrame(deltaTime, this);
+    }
   }
 }
