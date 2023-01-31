@@ -1,7 +1,10 @@
 import { Controller } from "./Controller";
-import { Scene, IPhysicsEnginePlugin, Vector3 } from "babylonjs";
+import { Scene, IPhysicsEnginePlugin, Vector3, KeyboardInfo } from "babylonjs";
 export default class TestController extends Controller {
-
+  constructor(scene: Scene, canvas: any) {
+    super(scene, canvas);
+    this.command.test = true;
+  }
   //https://www.babylonjs-playground.com/#3EDS3A#96
   managePointerLock() {
     // Pointer lock
@@ -64,7 +67,7 @@ export default class TestController extends Controller {
     if (this.inputMap[" "]) {
       this.command.displacement.addInPlace(Vector3.Up());
     }
-    if (this.inputMap["Control"]) {
+    if (this.inputMap["AltGraph"]) {
       this.command.displacement.addInPlace(Vector3.Down());
     }
     if (this.inputMap["g"]) {
@@ -74,5 +77,16 @@ export default class TestController extends Controller {
     }
     this.move();
   };
-
+  calcUpVector() {
+    if (this.player.compoundMesh.physicsImpostor === undefined && !this.command.gravity.equals(Vector3.Zero())) {
+      this.command.up = this.command.gravity.multiplyByFloats(-1, -1, -1);
+    }
+    else {
+      this.command.up = Vector3.Up()
+    }
+  }
+  setTarget() {
+    this.command.negTarget = Vector3.Zero();
+    this.command.negTarget.copyFrom(this.player.cam.camObj.position);
+  }
 }

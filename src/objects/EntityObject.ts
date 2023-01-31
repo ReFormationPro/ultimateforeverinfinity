@@ -1,10 +1,10 @@
-import { Camera, Mesh, PhysicsImpostor } from "babylonjs";
+import { Camera, Matrix, Mesh, PhysicsImpostor } from "babylonjs";
 import { Scene, Vector3 } from "babylonjs";
 import Player from "./Player";
 import { BoxCollider, Collider, JumpCollider } from "./Collider";
-import UFICamera from "./Camera";
+import UFICamera from "./UFICamera";
 import { FPS_COUNT_ } from "../globals";
-import UFIAnimation from "./UFIAnimation";
+import UFIAnimationManager from "./UFIAnimation";
 import { UFICommand } from "../controllers/Controller";
 // All EntityObject instances can move
 export default class EntityObject {
@@ -12,14 +12,13 @@ export default class EntityObject {
   compoundMesh: Mesh = undefined;
   cam: UFICamera = undefined;
   collider: Collider = undefined;
-  animation: UFIAnimation = undefined;
-
+  animationManager: UFIAnimationManager = undefined;
 
   name: string;
   static index = 0;
   scene: Scene;
   //v is the unit up vector
-  v: Vector3 = Vector3.Up();
+  initialUpVector: Vector3 = Vector3.Up();
   //frame times in seconds
   frameTime: number = undefined;
   prevFrameTime: number = undefined;
@@ -49,7 +48,7 @@ export default class EntityObject {
     this.rotation = rotation;
   }
   createCompundMesh() {
-    console.log(this.position);
+    // console.log(this.position);
     this.compoundMesh = new Mesh("", this.scene);
     this.compoundMesh.position = this.position;
     this.compoundMesh.rotation = this.rotation;
@@ -63,9 +62,8 @@ export default class EntityObject {
     camMesh.position = Vector3.Zero();
     this.cam.camObj.lockedTarget = camMesh;
   }
-  setAnimation(animation: UFIAnimation) {
-    this.animation = animation;
-    this.animation.obj = this;
+  setAnimation(animationManager: UFIAnimationManager) {
+    this.animationManager = animationManager;
   }
   setCollider(collider: Collider, isFacingCamera: boolean = true) {
     this.collider = collider;
@@ -110,13 +108,53 @@ export default class EntityObject {
     }
     return this.frameTime - this.prevFrameTime;
   }
-  //children should implement these
-  calcRelativeAxes(): Array<Vector3> {
-    return [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+  calcBackwardVector(negTarget: Vector3, yZero: boolean = true) {
+    const resVec: Vector3 = negTarget.subtract(this.compoundMesh.position);
+    resVec.y = 0;
+    return resVec.normalize();
+  }
+  calcRightVector(backward: Vector3, up: Vector3): Vector3 {
+    return Vector3.Cross(up, backward);
+  }
+  calcAnOrthogonal(forwardVector: Vector3) {
+    const resVec: Vector3 = Vector3.Zero(),
+      unitResVec: Vector3 = Vector3.Zero();
+    resVec.x = forwardVector.z;
+    resVec.y = 0;
+    resVec.z = -forwardVector.x;
+    resVec.normalizeToRef(unitResVec);
+    return unitResVec;
+  }
+  calcAxesRef(negTarget: Vector3, up: Vector3) {
+    const w = this.calcBackwardVector(negTarget);
+    const v = up;
+    const u = this.calcRightVector(w, v);
+    return [u, v, w]
+  }
+  alignUvw(negTarget: Vector3, upVector: Vector3 = null) {
+    // TODO: Complete this
+    const backwardVector = this.calcBackwardVector(negTarget);
+    if (upVector === null) {
+      upVector = this.calcAnOrthogonal(backwardVector)
+    }
+    const [u, v, w] = this.calcAxesRef(negTarget, upVector);
+
+    // Inverse of the alignment matrix, which is orthogonal
+    const matrix: Matrix = Matrix.FromArray([
+      u.x, u.y, u.z, 0,
+      v.x, v.y, v.z, 0,
+      w.x, w.y, w.z, 0,
+      0, 0, 0, 1
+    ]);
   }
   move(command: UFICommand) {
     const deltaTime = this.calcDeltaTime();
-    const [u, v, w] = this.calcRelativeAxes();
+    this.animateFrame(command, deltaTime);
+    const [u, v, w] = this.calcAxesRef(command.negTarget, command.up);
+
+    // console.log(`u: ${u}`);
+    // console.log(`v: ${v}`);
+    // console.log(`w: ${w}`);
 
     const unitDisplacementRight: Vector3 = u.multiplyByFloats(
       -command.displacement.x,
@@ -169,8 +207,8 @@ export default class EntityObject {
       }
       // console.log(`jumpCollider.onObject: ${jumpCollider.onObject}`);
 
-      if (unitDirection.y !== 0 && jumpCollider.onObject) {
-        this.compoundMesh.physicsImpostor.setLinearVelocity(new Vector3(0, 58.8, 0));
+      if (command.displacement.y !== 0 && (jumpCollider.onObject || command.test)) {
+        this.compoundMesh.physicsImpostor.setLinearVelocity(jumpVelocity.multiply(unitDirection));
         jumpCollider.onObject = false;
       }
       else {
@@ -178,5 +216,9 @@ export default class EntityObject {
       }
     }
   }
-  draw(url: string) { }
+  //children should implement these
+  draw(url: string) {
+    console.log(url);
+  }
+  animateFrame(command: UFICommand, deltaTime: number) { }
 }

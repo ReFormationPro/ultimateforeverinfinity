@@ -1,7 +1,11 @@
 import { Controller } from "./Controller";
-import { Vector3 } from "babylonjs";
+import { Scene, Vector3 } from "babylonjs";
 import TestController from "./TestController";
 export default class PlayerController extends TestController {
+  constructor(scene: Scene, canvas: any) {
+    super(scene, canvas);
+    this.command.test = false;
+  }
   listenInput() {
     this.command.displacement = Vector3.Zero();
 
