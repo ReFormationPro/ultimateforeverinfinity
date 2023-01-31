@@ -1,5 +1,4 @@
 import { Engine } from "babylonjs";
-import "babylonjs-inspector";
 import TestScene from "./scenes/TestScene";
 
 export const start = async () => {
