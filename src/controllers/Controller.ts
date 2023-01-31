@@ -1,8 +1,18 @@
-import { Vector3, Scene, ActionManager, ExecuteCodeAction } from "babylonjs";
+import { Vector3, Scene, ActionManager, ExecuteCodeAction, IPhysicsEnginePlugin, KeyboardInfo } from "babylonjs";
+export class UFICommand {
+  displacement: Vector3 = Vector3.Zero();
+  gravity: Vector3 = Vector3.Zero();
+  // A coordinate in the opposite direction of the target
+  negTarget: Vector3;
+  // current up vector
+  up: Vector3;
+  test: boolean = false;
+}
 import Player from "../objects/Player";
-export default abstract class Controller {
+export abstract class Controller {
+
+  command: UFICommand;
   player: Player;
-  displacement: Vector3;
   inputMap: object = {};
   canvas: any;
   scene: Scene;
@@ -10,6 +20,7 @@ export default abstract class Controller {
   constructor(scene: Scene, canvas: any) {
     this.scene = scene;
     this.canvas = canvas;
+    this.command = new UFICommand();
 
     this.inputMap = {};
     scene.actionManager = new ActionManager(scene);
@@ -21,45 +32,32 @@ export default abstract class Controller {
     );
     scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+        console.log(`evt.sourceEvent.type: ${evt.sourceEvent.type}`);
         this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
       })
     );
+    //https://www.sitepoint.com/community/t/disable-different-keyboard-short-cuts-and-clicks-using-javascript-and-jquery/277794/3
+    //Disable the context menu
+    // document.addEventListener('contextmenu', event => {
+    //   event.preventDefault();
+    // })
+    // //Disable essential hotkeys (ctrl+qcvxswpuaz)
+    // document.body.addEventListener('keydown', event => {
+    //   console.log(event.key, event.ctrlKey);
+    //   if (event.ctrlKey && 'qcvxswpuaz'.indexOf(event.key) !== -1) {
+    //     event.preventDefault();
+    //     event.stopPropagation();
+    //   }
+    // })
   }
   move() {
-    this.player.prevFrameTime = this.player.frameTime;
-    this.player.frameTime = Date.now() / 1000;
-    if (this.player.prevFrameTime === undefined) {
-      this.player.prevFrameTime = this.player.frameTime;
-      return;
-    }
-    const deltaTime = this.player.frameTime - this.player.prevFrameTime;
-    //console.log(deltaTime);
-
-    const [u, v, w] = this.player.calcRelativeAxes();
-
-    const unitDisplacementRight: Vector3 = u.multiplyByFloats(
-      -this.displacement.x,
-      -this.displacement.x,
-      -this.displacement.x
-    );
-    const unitDisplacementUp: Vector3 = v.multiplyByFloats(
-      this.displacement.y,
-      this.displacement.y,
-      this.displacement.y
-    );
-    const unitDisplacementForward: Vector3 = w.multiplyByFloats(
-      -this.displacement.z,
-      -this.displacement.z,
-      -this.displacement.z
-    );
-
-    const unitDisplacement = unitDisplacementRight.add(
-      unitDisplacementUp.add(unitDisplacementForward)
-    );
-
-    this.player.move(unitDisplacement, deltaTime);
+    this.setTarget();
+    this.calcUpVector();
+    this.player.move(this.command);
   }
-  rotate() {}
-  // children should implement this
-  listenInput() {}
+  rotate() { }
+  // children should implement these
+  calcUpVector() { }
+  listenInput() { }
+  setTarget() { }
 }
