@@ -29,7 +29,7 @@ export default class UFIPlane extends EntityObject {
       width: this.width,
       height: this.height
     });
-    console.log(this.position);
+    // console.log(this.position);
 
     this.createCompundMesh();
     this.mesh.position = Vector3.Zero();

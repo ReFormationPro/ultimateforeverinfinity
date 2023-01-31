@@ -6,12 +6,13 @@ import UFIGround from "../objects/UFIGround";
 import BaseScene from "./BaseScene";
 
 import { BoxCollider, JumpCollider } from "../objects/Collider";
-import UFICamera from "../objects/Camera";
+import UFICamera from "../objects/UFICamera";
 import TestController from "../controllers/TestController";
 import Player from "../objects/Player";
-import Controller from "../controllers/Controller";
+import { Controller } from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
-import { PLAYER_IMG_DIR } from "../globals";
+import { PLAYER_DIR, PLAYER_IMG_DIR } from "../globals";
+import UFIAnimationManager from "../objects/UFIAnimation";
 
 export default class TestScene extends BaseScene {
   player: Player;
@@ -64,12 +65,19 @@ export default class TestScene extends BaseScene {
         this,
         this.player.width,
         this.player.height,
-        2,
+        .5,
         null,
         null,
         Color3.Blue()
       )
     );
+    const am = new UFIAnimationManager({
+      walkForward: ["player_3", "player_4"],
+      walkBackward: ["player_6", "player_7"],
+      walkRight: ["player_12", "player_13"],
+      walkLeft: ["player_15", "player_16"]
+    }, PLAYER_DIR)
+    this.player.setAnimation(am)
     //ENABLE PHYSICS
     this.addPhysics();
     this.player.addPhysics(3);
