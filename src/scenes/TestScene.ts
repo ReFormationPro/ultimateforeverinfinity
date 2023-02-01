@@ -23,7 +23,8 @@ export default class TestScene extends BaseScene {
     this.player = new Player(this, 1, 1, new Vector3(1, 2, 3));
 
     // this.player.setTexture(SPRITESHEET_DIR);
-    // this.player.mapSprites(SPRITESHEET_MAP_DIR, 2)
+    // this.player.mapSprites(SPRITESHEET_MAP_DIR);
+    // this.player.drawSprite();
 
     this.player.setDynamicTexture();
     this.player.drawDynamicTexture(PLAYER_IMG_DIR);
@@ -77,12 +78,12 @@ export default class TestScene extends BaseScene {
     );
     //ENABLE PHYSICS
     this.addPhysics();
-    this.player.addPhysics(3);
+    this.player.addPhysics(1);
     ground.addPhysics();
     dummy.addPhysics();
     //CONTROLLER
-    // this.controller = new TestController(this, canvas);
-    this.controller = new PlayerController(this, canvas);
+    this.controller = new TestController(this, this.canvas);
+    // this.controller = new PlayerController(this, this.canvas);
     this.player.addController(this.controller);
   }
 }

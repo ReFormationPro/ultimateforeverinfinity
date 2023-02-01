@@ -33,7 +33,7 @@ export abstract class Controller {
     );
     scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        console.log(`evt.sourceEvent.type: ${evt.sourceEvent.type}`);
+        // console.log(`evt.sourceEvent.type: ${evt.sourceEvent.type}`);
         self.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
       })
     );
@@ -58,7 +58,7 @@ export abstract class Controller {
   }
   rotate() { }
   // children should implement these
+  setTarget() { }
   calcUpVector() { }
   listenInput() { }
-  setTarget() { }
 }

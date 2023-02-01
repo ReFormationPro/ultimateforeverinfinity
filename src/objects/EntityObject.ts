@@ -23,11 +23,9 @@ export default class EntityObject {
   //frame times in seconds
   frameTime: number = undefined;
   prevFrameTime: number = undefined;
-  //speed units per second
-  speed: number;
-  jumpSpeed: number;
-  //units per meter
-  static unitsPerMeter: number = 100;
+  //speed 
+  speed: number = undefined;
+  jumpSpeed: number = undefined;
   //
   position: Vector3;
   rotation: Vector3;
@@ -74,8 +72,8 @@ export default class EntityObject {
       noMipMaps, //NoMipMaps
       false, //InvertY usually false if exported from TexturePacker
       samplingMode, //Sampling Mode
-      null, //Onload, you could spin up the sprite map in a function nested here
-      null, //OnError
+      () => console.log("Load successful"), //Onload, you could spin up the sprite map in a function nested here
+      (msg: string, e: any) => console.log(msg, e), //OnError
       null, //CustomBuffer
       false, //DeleteBuffer
       BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA
@@ -85,6 +83,7 @@ export default class EntityObject {
     atlasJSON: ISpriteJSONAtlas,
     maxAnimationFrames = 2
   ) {
+
     this.spriteMap = new SpriteMap(
       `${this.name}SpriteMap`,
       atlasJSON, this.texture, {
@@ -130,7 +129,6 @@ export default class EntityObject {
     var img = new Image();
     img.src = url;
     // console.log(img, url);
-    const self = this;
     img.onload = function () {
       ctx.drawImage(this, 0, 0);
       dynamicTexture.update();
@@ -181,7 +179,9 @@ export default class EntityObject {
   }
   calcBackwardVector(negTarget: Vector3, yZero: boolean = true) {
     const resVec: Vector3 = negTarget.subtract(this.compoundMesh.position);
-    resVec.y = 0;
+    if (yZero) {
+      resVec.y = 0;
+    }
     return resVec.normalize();
   }
   calcRightVector(backward: Vector3, up: Vector3): Vector3 {
@@ -202,6 +202,27 @@ export default class EntityObject {
     const u = this.calcRightVector(w, v);
     return [u, v, w]
   }
+  calcUnitDirection(displacement, u, v, w) {
+    const unitDisplacementRight: Vector3 = u.multiplyByFloats(
+      -displacement.x,
+      -displacement.x,
+      -displacement.x
+    );
+    const unitDisplacementUp: Vector3 = v.multiplyByFloats(
+      displacement.y,
+      displacement.y,
+      displacement.y
+    );
+    const unitDisplacementForward: Vector3 = w.multiplyByFloats(
+      -displacement.z,
+      -displacement.z,
+      -displacement.z
+    );
+
+    return unitDisplacementRight.add(
+      unitDisplacementUp.add(unitDisplacementForward)
+    ).normalize();
+  }
   alignUvw(negTarget: Vector3, upVector: Vector3 = null) {
     // TODO: Complete this
     const backwardVector = this.calcBackwardVector(negTarget);
@@ -221,37 +242,10 @@ export default class EntityObject {
   move(command: UFICommand) {
     const deltaTime = this.calcDeltaTime();
     const [u, v, w] = this.calcAxesRef(command.negTarget, command.up);
-
-    // console.log(`u: ${u}`);
-    // console.log(`v: ${v}`);
-    // console.log(`w: ${w}`);
-
-    const unitDisplacementRight: Vector3 = u.multiplyByFloats(
-      -command.displacement.x,
-      -command.displacement.x,
-      -command.displacement.x
-    );
-    const unitDisplacementUp: Vector3 = v.multiplyByFloats(
-      command.displacement.y,
-      command.displacement.y,
-      command.displacement.y
-    );
-    const unitDisplacementForward: Vector3 = w.multiplyByFloats(
-      -command.displacement.z,
-      -command.displacement.z,
-      -command.displacement.z
-    );
-
-    const unitDirection = unitDisplacementRight.add(
-      unitDisplacementUp.add(unitDisplacementForward)
-    ).normalize();
-
-
-    const frameSpeed = (this.speed * EntityObject.unitsPerMeter) / FPS_COUNT_;
-    const frameJumpSpeed = (this.jumpSpeed * EntityObject.unitsPerMeter) / FPS_COUNT_;
+    const unitDirection = this.calcUnitDirection(command.displacement, u, v, w);
 
     if (this.compoundMesh.physicsImpostor === undefined) {
-      const displacementNorm = frameSpeed * deltaTime;
+      const displacementNorm = this.speed * deltaTime;
       const displacement: Vector3 = new Vector3(
         displacementNorm,
         displacementNorm,
@@ -260,29 +254,45 @@ export default class EntityObject {
       this.compoundMesh.position.addInPlace(displacement.multiply(unitDirection))
     }
     else {
-      const velocity: Vector3 = new Vector3(
-        frameSpeed,
-        0,
-        frameSpeed
-      );
-      const jumpVelocity: Vector3 = new Vector3(
-        0,
-        frameJumpSpeed,
-        0
-      );
-
       const jumpCollider: JumpCollider = <JumpCollider>this.collider;
       if (jumpCollider === undefined) {
         throw TypeError("jumpCollider is undefined");
       }
       // console.log(`jumpCollider.onObject: ${jumpCollider.onObject}`);
+      // console.log(`unitDirection: ${unitDirection}`);
+      // console.log(`this.scene.gravity: ${this.scene.gravity}`);
+      console.log(`command.gravity: ${command.gravity}`);
+      if (command.displacement.y !== 0) {
+        const jumpVelocity: Vector3 = unitDirection.multiplyByFloats(
+          this.jumpSpeed,
+          this.jumpSpeed,
+          this.jumpSpeed,
+        );
+        if (jumpCollider.onObject || command.test) {
+          this.compoundMesh.physicsImpostor.wakeUp();
+          this.compoundMesh.physicsImpostor.setLinearVelocity(jumpVelocity);
+          jumpCollider.onObject = false;
+        }
+      }
+      else if (command.displacement.x !== 0 || command.displacement.z !== 0) {
+        const velocity: Vector3 = unitDirection.multiplyByFloats(
+          this.speed,
+          this.speed,
+          this.speed
+        );
 
-      if (command.displacement.y !== 0 && (jumpCollider.onObject || command.test)) {
-        this.compoundMesh.physicsImpostor.setLinearVelocity(jumpVelocity.multiply(unitDirection));
-        jumpCollider.onObject = false;
+        this.compoundMesh.physicsImpostor.wakeUp();
+        const currVelocity = this.compoundMesh.physicsImpostor.getLinearVelocity();
+        currVelocity.x = 0;
+        currVelocity.z = 0;
+
+        this.compoundMesh.physicsImpostor.setLinearVelocity(velocity.add(currVelocity));
+      }
+      else if (jumpCollider.onObject || (command.test && command.gravity.equals(Vector3.Zero()))) {
+        this.compoundMesh.physicsImpostor.sleep();
       }
       else {
-        this.compoundMesh.physicsImpostor.setLinearVelocity(velocity.multiply(unitDirection));
+        this.compoundMesh.physicsImpostor.wakeUp();
       }
     }
   }

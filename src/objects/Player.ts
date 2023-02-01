@@ -19,8 +19,8 @@ export default class Player extends UFIPlane {
     height: number = 1,
     position: Vector3 = new Vector3(0, height / 2, 0),
     rotation: Vector3 = new Vector3(0, 0, 0),
-    speed: number = 5,
-    jumpSpeed: number = 60,
+    speed: number = 10,
+    jumpSpeed: number = speed,
   ) {
     super(scene, width, height, position, rotation, true);
     // console.log(`url: ${url}`);

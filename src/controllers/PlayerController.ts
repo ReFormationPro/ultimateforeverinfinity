@@ -4,6 +4,7 @@ import TestController from "./TestController";
 export default class PlayerController extends TestController {
   constructor(scene: Scene, canvas: any) {
     super(scene, canvas);
+    this.command.gravity.copyFrom(this.scene.gravity);
     this.command.test = false;
   }
   listenInput() {
