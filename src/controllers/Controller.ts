@@ -18,7 +18,6 @@ export abstract class Controller {
   scene: Scene;
 
   constructor(scene: Scene, canvas: any) {
-    const self = this;
     this.scene = scene;
     this.canvas = canvas;
     this.command = new UFICommand();
@@ -28,7 +27,7 @@ export abstract class Controller {
 
     scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
-        self.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+        this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
       })
     );
     scene.actionManager.registerAction(
