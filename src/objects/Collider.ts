@@ -6,7 +6,7 @@ import {
   Color3,
   StandardMaterial,
   Ray,
-  RayHelper
+  RayHelper,
 } from "babylonjs";
 import EntityObject from "./EntityObject";
 import Player from "./Player";
@@ -128,7 +128,7 @@ export class BoxCollider extends JumpCollider {
     this.mesh = MeshBuilder.CreateBox(this.name, {
       width: this.width,
       height: this.height,
-      depth: this.depth
+      depth: this.depth,
     });
 
     this.mesh.isPickable = false;
