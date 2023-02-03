@@ -11,19 +11,24 @@ import TestController from "../controllers/TestController";
 import Player from "../objects/Player";
 import { Controller } from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
-import { PLAYER_DIR, PLAYER_IMG_DIR } from "../globals";
-import UFIAnimationManager from "../objects/UFIAnimation";
+import { PLAYER_DIR, PLAYER_IMG_DIR, SPRITESHEET_DIR, SPRITESHEET_MAP_DIR } from "../globals";
 
 export default class TestScene extends BaseScene {
   player: Player;
   controller: Controller;
-  constructor(engine: Engine, canvas: any) {
-    super(engine, canvas);
-
-
+  // constructor(engine: Engine, canvas: any) {
+  //   super(engine, canvas);
+  async initialize() {
     //CREATE OBJECTS
+    this.player = new Player(this, 1, 1, new Vector3(1, 2, 3));
 
-    this.player = new Player(this, PLAYER_IMG_DIR, 1, 1, new Vector3(1, 2, 3));
+    // this.player.setTexture(SPRITESHEET_DIR);
+    // this.player.mapSprites(SPRITESHEET_MAP_DIR);
+    // this.player.drawSprite();
+
+    this.player.setDynamicTexture();
+    this.player.drawDynamicTexture(PLAYER_IMG_DIR);
+
     // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
     var light = new HemisphericLight("light", new Vector3(0, 1, 0), this);
 
@@ -47,7 +52,7 @@ export default class TestScene extends BaseScene {
     ball4.position = new Vector3(5, 4, 20);
     ball5.position = new Vector3(5, 4, -20);
 
-    let camera = new UFICamera(this, canvas, this.player.compoundMesh.position);
+    let camera = new UFICamera(this, this.canvas, this.player.compoundMesh.position);
 
     this.player.setCamera(camera);
     // this.player.setCollider(
@@ -71,21 +76,14 @@ export default class TestScene extends BaseScene {
         Color3.Blue()
       )
     );
-    const am = new UFIAnimationManager({
-      walkForward: ["player_3", "player_4"],
-      walkBackward: ["player_6", "player_7"],
-      walkRight: ["player_12", "player_13"],
-      walkLeft: ["player_15", "player_16"]
-    }, PLAYER_DIR)
-    this.player.setAnimation(am)
     //ENABLE PHYSICS
     this.addPhysics();
-    this.player.addPhysics(3);
+    this.player.addPhysics(1);
     ground.addPhysics();
     dummy.addPhysics();
     //CONTROLLER
-    // this.controller = new TestController(this, canvas);
-    this.controller = new PlayerController(this, canvas);
+    this.controller = new TestController(this, this.canvas);
+    // this.controller = new PlayerController(this, this.canvas);
     this.player.addController(this.controller);
   }
 }

@@ -1,10 +1,9 @@
-import { Camera, Matrix, Mesh, PhysicsImpostor } from "babylonjs";
+import { AssetsManager, Camera, DynamicTexture, ISpriteJSONAtlas, Material, Matrix, Mesh, PhysicsImpostor, SpriteMap, StandardMaterial, TextFileAssetTask, Texture, Vector2 } from "babylonjs";
 import { Scene, Vector3 } from "babylonjs";
 import Player from "./Player";
 import { BoxCollider, Collider, JumpCollider } from "./Collider";
 import UFICamera from "./UFICamera";
 import { FPS_COUNT_ } from "../globals";
-import UFIAnimationManager from "./UFIAnimation";
 import { UFICommand } from "../controllers/Controller";
 // All EntityObject instances can move
 export default class EntityObject {
@@ -12,7 +11,9 @@ export default class EntityObject {
   compoundMesh: Mesh = undefined;
   cam: UFICamera = undefined;
   collider: Collider = undefined;
-  animationManager: UFIAnimationManager = undefined;
+  texture: Texture = undefined;
+  material: Material = undefined;
+  spriteMap: SpriteMap = undefined;
 
   name: string;
   static index = 0;
@@ -22,11 +23,9 @@ export default class EntityObject {
   //frame times in seconds
   frameTime: number = undefined;
   prevFrameTime: number = undefined;
-  //speed units per second
-  speed: number;
-  jumpSpeed: number;
-  //units per meter
-  static unitsPerMeter: number = 100;
+  //speed 
+  speed: number = undefined;
+  jumpSpeed: number = undefined;
   //
   position: Vector3;
   rotation: Vector3;
@@ -62,8 +61,78 @@ export default class EntityObject {
     camMesh.position = Vector3.Zero();
     this.cam.camObj.lockedTarget = camMesh;
   }
-  setAnimation(animationManager: UFIAnimationManager) {
-    this.animationManager = animationManager;
+  setTexture(
+    url: string,
+    noMipMaps: boolean = false,
+    samplingMode: number = Texture.NEAREST_NEAREST
+  ) {
+    console.log(url);
+    // Load the spritesheet (with appropriate settings) associated with the JSON Atlas.
+    this.texture = new Texture(url, this.scene,
+      noMipMaps, //NoMipMaps
+      false, //InvertY usually false if exported from TexturePacker
+      samplingMode, //Sampling Mode
+      () => console.log("Load successful"), //Onload, you could spin up the sprite map in a function nested here
+      (msg: string, e: any) => console.log(msg, e), //OnError
+      null, //CustomBuffer
+      false, //DeleteBuffer
+      BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA
+    );
+  }
+  async mapSprites(
+    atlasJSON: ISpriteJSONAtlas,
+    maxAnimationFrames = 2
+  ) {
+
+    this.spriteMap = new SpriteMap(
+      `${this.name}SpriteMap`,
+      atlasJSON, this.texture, {
+      maxAnimationFrames: maxAnimationFrames,
+      stageSize: new Vector2(1, 1),
+      flipU: true
+    }, this.scene
+    )
+  }
+  drawSprite(spriteIndex: number = 0) {
+    this.spriteMap.changeTiles(0, new Vector2(0, 0), spriteIndex)
+  }
+  setDynamicTexture(
+    width: number = 64,
+    height: number = width,
+    generateMipMaps: boolean = true,
+    samplingMode: number = Texture.NEAREST_NEAREST
+  ) {
+    this.material = new StandardMaterial(
+      `${this.name}Material`,
+      this.scene
+    );
+
+    this.texture = new DynamicTexture(
+      `${this.name}Texture`,
+      { width: width, height: height },
+      this.scene,
+      generateMipMaps,
+      samplingMode
+    );
+
+    const stdMat = <StandardMaterial>this.material;
+    stdMat.diffuseTexture = this.texture;
+    stdMat.diffuseTexture.hasAlpha = true;
+    // stdMat.backFaceCulling = true;
+    this.mesh.material = stdMat;
+  }
+  drawDynamicTexture(url: string) {
+    console.log(url);
+    const dynamicTexture = <DynamicTexture>this.texture
+
+    var ctx = dynamicTexture.getContext();
+    var img = new Image();
+    img.src = url;
+    // console.log(img, url);
+    img.onload = function () {
+      ctx.drawImage(this, 0, 0);
+      dynamicTexture.update();
+    }
   }
   setCollider(collider: Collider, isFacingCamera: boolean = true) {
     this.collider = collider;
@@ -110,7 +179,9 @@ export default class EntityObject {
   }
   calcBackwardVector(negTarget: Vector3, yZero: boolean = true) {
     const resVec: Vector3 = negTarget.subtract(this.compoundMesh.position);
-    resVec.y = 0;
+    if (yZero) {
+      resVec.y = 0;
+    }
     return resVec.normalize();
   }
   calcRightVector(backward: Vector3, up: Vector3): Vector3 {
@@ -131,6 +202,27 @@ export default class EntityObject {
     const u = this.calcRightVector(w, v);
     return [u, v, w]
   }
+  calcUnitDirection(displacement, u, v, w) {
+    const unitDisplacementRight: Vector3 = u.multiplyByFloats(
+      -displacement.x,
+      -displacement.x,
+      -displacement.x
+    );
+    const unitDisplacementUp: Vector3 = v.multiplyByFloats(
+      displacement.y,
+      displacement.y,
+      displacement.y
+    );
+    const unitDisplacementForward: Vector3 = w.multiplyByFloats(
+      -displacement.z,
+      -displacement.z,
+      -displacement.z
+    );
+
+    return unitDisplacementRight.add(
+      unitDisplacementUp.add(unitDisplacementForward)
+    ).normalize();
+  }
   alignUvw(negTarget: Vector3, upVector: Vector3 = null) {
     // TODO: Complete this
     const backwardVector = this.calcBackwardVector(negTarget);
@@ -149,39 +241,11 @@ export default class EntityObject {
   }
   move(command: UFICommand) {
     const deltaTime = this.calcDeltaTime();
-    this.animateFrame(command, deltaTime);
     const [u, v, w] = this.calcAxesRef(command.negTarget, command.up);
-
-    // console.log(`u: ${u}`);
-    // console.log(`v: ${v}`);
-    // console.log(`w: ${w}`);
-
-    const unitDisplacementRight: Vector3 = u.multiplyByFloats(
-      -command.displacement.x,
-      -command.displacement.x,
-      -command.displacement.x
-    );
-    const unitDisplacementUp: Vector3 = v.multiplyByFloats(
-      command.displacement.y,
-      command.displacement.y,
-      command.displacement.y
-    );
-    const unitDisplacementForward: Vector3 = w.multiplyByFloats(
-      -command.displacement.z,
-      -command.displacement.z,
-      -command.displacement.z
-    );
-
-    const unitDirection = unitDisplacementRight.add(
-      unitDisplacementUp.add(unitDisplacementForward)
-    ).normalize();
-
-
-    const frameSpeed = (this.speed * EntityObject.unitsPerMeter) / FPS_COUNT_;
-    const frameJumpSpeed = (this.jumpSpeed * EntityObject.unitsPerMeter) / FPS_COUNT_;
+    const unitDirection = this.calcUnitDirection(command.displacement, u, v, w);
 
     if (this.compoundMesh.physicsImpostor === undefined) {
-      const displacementNorm = frameSpeed * deltaTime;
+      const displacementNorm = this.speed * deltaTime;
       const displacement: Vector3 = new Vector3(
         displacementNorm,
         displacementNorm,
@@ -190,35 +254,46 @@ export default class EntityObject {
       this.compoundMesh.position.addInPlace(displacement.multiply(unitDirection))
     }
     else {
-      const velocity: Vector3 = new Vector3(
-        frameSpeed,
-        0,
-        frameSpeed
-      );
-      const jumpVelocity: Vector3 = new Vector3(
-        0,
-        frameJumpSpeed,
-        0
-      );
-
       const jumpCollider: JumpCollider = <JumpCollider>this.collider;
       if (jumpCollider === undefined) {
         throw TypeError("jumpCollider is undefined");
       }
       // console.log(`jumpCollider.onObject: ${jumpCollider.onObject}`);
+      // console.log(`unitDirection: ${unitDirection}`);
+      // console.log(`this.scene.gravity: ${this.scene.gravity}`);
+      console.log(`command.gravity: ${command.gravity}`);
+      if (command.displacement.y !== 0) {
+        const jumpVelocity: Vector3 = unitDirection.multiplyByFloats(
+          this.jumpSpeed,
+          this.jumpSpeed,
+          this.jumpSpeed,
+        );
+        if (jumpCollider.onObject || command.test) {
+          this.compoundMesh.physicsImpostor.wakeUp();
+          this.compoundMesh.physicsImpostor.setLinearVelocity(jumpVelocity);
+          jumpCollider.onObject = false;
+        }
+      }
+      else if (command.displacement.x !== 0 || command.displacement.z !== 0) {
+        const velocity: Vector3 = unitDirection.multiplyByFloats(
+          this.speed,
+          this.speed,
+          this.speed
+        );
 
-      if (command.displacement.y !== 0 && (jumpCollider.onObject || command.test)) {
-        this.compoundMesh.physicsImpostor.setLinearVelocity(jumpVelocity.multiply(unitDirection));
-        jumpCollider.onObject = false;
+        this.compoundMesh.physicsImpostor.wakeUp();
+        const currVelocity = this.compoundMesh.physicsImpostor.getLinearVelocity();
+        currVelocity.x = 0;
+        currVelocity.z = 0;
+
+        this.compoundMesh.physicsImpostor.setLinearVelocity(velocity.add(currVelocity));
+      }
+      else if (jumpCollider.onObject || (command.test && command.gravity.equals(Vector3.Zero()))) {
+        this.compoundMesh.physicsImpostor.sleep();
       }
       else {
-        this.compoundMesh.physicsImpostor.setLinearVelocity(velocity.multiply(unitDirection));
+        this.compoundMesh.physicsImpostor.wakeUp();
       }
     }
   }
-  //children should implement these
-  draw(url: string) {
-    console.log(url);
-  }
-  animateFrame(command: UFICommand, deltaTime: number) { }
 }

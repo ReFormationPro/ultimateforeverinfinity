@@ -32,8 +32,8 @@ export abstract class Controller {
     );
     scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        console.log(`evt.sourceEvent.type: ${evt.sourceEvent.type}`);
-        this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+        // console.log(`evt.sourceEvent.type: ${evt.sourceEvent.type}`);
+        self.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
       })
     );
     //https://www.sitepoint.com/community/t/disable-different-keyboard-short-cuts-and-clicks-using-javascript-and-jquery/277794/3
@@ -57,7 +57,7 @@ export abstract class Controller {
   }
   rotate() { }
   // children should implement these
+  setTarget() { }
   calcUpVector() { }
   listenInput() { }
-  setTarget() { }
 }
