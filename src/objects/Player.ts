@@ -21,12 +21,14 @@ export default class Player extends UFIPlane {
     rotation: Vector3 = new Vector3(0, 0, 0),
     speed: number = 10,
     jumpSpeed: number = speed,
+    jumpCount: number = 2
   ) {
     super(scene, width, height, position, rotation, true);
     // console.log(`url: ${url}`);
     //units per second
     this.speed = speed;
     this.jumpSpeed = jumpSpeed;
+    this.jumpCount = jumpCount;
     this.mesh.isPickable = false;
   }
   addController(controller: Controller) {

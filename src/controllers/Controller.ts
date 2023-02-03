@@ -13,27 +13,50 @@ export abstract class Controller {
 
   command: UFICommand;
   player: Player;
-  inputMap: object = {};
+  inputMapQueue: Array<object> = [{}, {}];
+  singleTypeKeys: Array<string>
   canvas: any;
   scene: Scene;
 
-  constructor(scene: Scene, canvas: any) {
+  constructor(scene: Scene, canvas: any, singleTypeKeys: Array<string>) {
     this.scene = scene;
     this.canvas = canvas;
     this.command = new UFICommand();
-
-    this.inputMap = {};
+    this.singleTypeKeys = singleTypeKeys;
     scene.actionManager = new ActionManager(scene);
 
     scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
-        this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+        const srcEvt = evt.sourceEvent;
+        const key = srcEvt.key;
+
+        const inputMapOld = this.inputMapQueue.pop();
+        const inputMap = structuredClone(this.inputMapQueue[0]);
+
+        // if (this.singleTypeKeys.indexOf(key) !== -1) {
+        //   inputMap[key] = false;
+        //   if (inputMap[key] === undefined && inputMapOld[key] === undefined) {
+        //     inputMap[key] = true;
+        //     console.log(inputMap);
+        //   }
+        // }
+        // else {
+        //   inputMap[key] = srcEvt.type === "keydown";
+        // }
+        inputMap[key] = true;
+
+        this.inputMapQueue.unshift(inputMap);
       })
     );
     scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
         // console.log(`evt.sourceEvent.type: ${evt.sourceEvent.type}`);
-        self.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+        this.inputMapQueue.pop();
+        const inputMap = structuredClone(this.inputMapQueue[0]);
+
+        inputMap[evt.sourceEvent.key] = false;
+        // inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+        this.inputMapQueue.unshift(inputMap);
       })
     );
     //https://www.sitepoint.com/community/t/disable-different-keyboard-short-cuts-and-clicks-using-javascript-and-jquery/277794/3

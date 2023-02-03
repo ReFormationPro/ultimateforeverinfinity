@@ -2,10 +2,14 @@ import { Controller } from "./Controller";
 import { Scene, IPhysicsEnginePlugin, Vector3, KeyboardInfo } from "babylonjs";
 export default class TestController extends Controller {
   constructor(scene: Scene, canvas: any) {
-    super(scene, canvas);
+    super(scene, canvas, [
+      " "
+    ]);
     this.command.test = true;
     this.command.gravity = Vector3.Zero();
-    this.scene._physicsEngine.setGravity(this.command.gravity);
+    if (this.scene._physicsEngine !== undefined) {
+      this.scene._physicsEngine.setGravity(this.command.gravity);
+    }
   }
   //https://www.babylonjs-playground.com/#3EDS3A#96
   managePointerLock() {
@@ -50,29 +54,30 @@ export default class TestController extends Controller {
   }
 
   listenInput() {
+    const inputMap = this.inputMapQueue[0];
     this.command.displacement = Vector3.Zero();
 
-    if (this.inputMap["w"]) {
+    if (inputMap["w"]) {
       this.command.displacement.addInPlace(Vector3.Forward());
     }
-    if (this.inputMap["a"]) {
+    if (inputMap["a"]) {
       this.command.displacement.addInPlace(Vector3.Left());
     }
-    if (this.inputMap["s"]) {
+    if (inputMap["s"]) {
       this.command.displacement.addInPlace(Vector3.Backward());
     }
 
-    if (this.inputMap["d"]) {
+    if (inputMap["d"]) {
       this.command.displacement.addInPlace(Vector3.Right());
     }
 
-    if (this.inputMap[" "]) {
+    if (inputMap[" "]) {
       this.command.displacement.addInPlace(Vector3.Up());
     }
-    if (this.inputMap["AltGraph"]) {
+    if (inputMap["AltGraph"]) {
       this.command.displacement.addInPlace(Vector3.Down());
     }
-    if (this.inputMap["g"]) {
+    if (inputMap["g"]) {
       if (this.command.gravity.equals(Vector3.Zero())) {
         this.command.gravity.copyFrom(this.scene.gravity)
       }
@@ -81,14 +86,16 @@ export default class TestController extends Controller {
       }
       this.scene._physicsEngine.setGravity(this.command.gravity);
     }
+    this.inputMapQueue.unshift(inputMap);
+
     this.move();
   };
   calcUpVector() {
-    if (this.player.compoundMesh.physicsImpostor === undefined && !this.command.gravity.equals(Vector3.Zero())) {
-      this.command.up = this.command.gravity.negate().normalize();
+    if (this.player.compoundMesh.physicsImpostor === undefined || this.command.gravity.equals(Vector3.Zero())) {
+      this.command.up = Vector3.Up()
     }
     else {
-      this.command.up = Vector3.Up()
+      this.command.up = this.command.gravity.negate().normalize();
     }
   }
   setTarget() {

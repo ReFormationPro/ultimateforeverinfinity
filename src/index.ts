@@ -10,7 +10,6 @@ export const start = async () => {
     });
 
     const scene = new TestScene(engine, canvas);
-    scene.initialize();
     // Hide loading icon
     const loader = document.querySelectorAll(".is-active")[0];
     loader.className = loader.className.replace("is-active", "");

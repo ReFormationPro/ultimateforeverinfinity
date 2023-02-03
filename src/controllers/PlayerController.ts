@@ -4,28 +4,34 @@ import TestController from "./TestController";
 export default class PlayerController extends TestController {
   constructor(scene: Scene, canvas: any) {
     super(scene, canvas);
-    this.command.gravity.copyFrom(this.scene.gravity);
     this.command.test = false;
+    this.command.gravity.copyFrom(this.scene.gravity);
+    if (this.scene._physicsEngine !== undefined) {
+      this.scene._physicsEngine.setGravity(this.command.gravity);
+    }
   }
   listenInput() {
+    const inputMap = this.inputMapQueue[0];
     this.command.displacement = Vector3.Zero();
 
-    if (this.inputMap["w"]) {
+    if (inputMap["w"]) {
       this.command.displacement.addInPlace(Vector3.Forward());
     }
-    if (this.inputMap["a"]) {
+    if (inputMap["a"]) {
       this.command.displacement.addInPlace(Vector3.Left());
     }
-    if (this.inputMap["s"]) {
+    if (inputMap["s"]) {
       this.command.displacement.addInPlace(Vector3.Backward());
     }
 
-    if (this.inputMap["d"]) {
+    if (inputMap["d"]) {
       this.command.displacement.addInPlace(Vector3.Right());
     }
-    if (this.inputMap[" "]) {
+    if (inputMap[" "]) {
       this.command.displacement.addInPlace(Vector3.Up());
     }
+    this.inputMapQueue.unshift(inputMap);
+
     this.move();
   }
 }
