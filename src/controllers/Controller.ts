@@ -27,7 +27,6 @@ export abstract class Controller {
 
     scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
-
         const srcEvt = evt.sourceEvent;
         const key = srcEvt.key;
 
