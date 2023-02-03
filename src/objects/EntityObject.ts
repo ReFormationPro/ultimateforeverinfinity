@@ -5,6 +5,7 @@ import { BoxCollider, Collider, JumpCollider } from "./Collider";
 import UFICamera from "./UFICamera";
 import { FPS_COUNT_ } from "../globals";
 import { UFICommand } from "../controllers/Controller";
+import BaseScene from "../scenes/BaseScene";
 // All EntityObject instances can move
 export default class EntityObject {
   mesh: Mesh = undefined;
@@ -26,6 +27,8 @@ export default class EntityObject {
   //speed 
   speed: number = undefined;
   jumpSpeed: number = undefined;
+  jumpCount: number = undefined;
+  jumpsLeft: number = undefined;
   //
   position: Vector3;
   rotation: Vector3;
@@ -173,11 +176,12 @@ export default class EntityObject {
     this.frameTime = Date.now() / 1000;
     if (this.prevFrameTime === undefined) {
       this.prevFrameTime = this.frameTime;
-      return;
+      return undefined;
     }
     return this.frameTime - this.prevFrameTime;
   }
   calcBackwardVector(negTarget: Vector3, yZero: boolean = true) {
+
     const resVec: Vector3 = negTarget.subtract(this.compoundMesh.position);
     if (yZero) {
       resVec.y = 0;
@@ -202,97 +206,88 @@ export default class EntityObject {
     const u = this.calcRightVector(w, v);
     return [u, v, w]
   }
-  calcUnitDirection(displacement, u, v, w) {
-    const unitDisplacementRight: Vector3 = u.multiplyByFloats(
-      -displacement.x,
-      -displacement.x,
-      -displacement.x
+  calcVelocityOnUWPlane(displacement: Vector3, u: Vector3, w: Vector3) {
+    const directionLeft: Vector3 = u.multiplyByFloats(
+      displacement.x,
+      displacement.x,
+      displacement.x
     );
-    const unitDisplacementUp: Vector3 = v.multiplyByFloats(
+    const directionBackward: Vector3 = w.multiplyByFloats(
+      displacement.z,
+      displacement.z,
+      displacement.z
+    );
+
+    return directionLeft.add(directionBackward).negate().normalize().multiplyByFloats(
+      this.speed,
+      this.speed,
+      this.speed
+    );
+  }
+  calcVelocityOnV(displacement: Vector3, v: Vector3) {
+    const directionUp: Vector3 = v.multiplyByFloats(
       displacement.y,
       displacement.y,
       displacement.y
-    );
-    const unitDisplacementForward: Vector3 = w.multiplyByFloats(
-      -displacement.z,
-      -displacement.z,
-      -displacement.z
-    );
-
-    return unitDisplacementRight.add(
-      unitDisplacementUp.add(unitDisplacementForward)
-    ).normalize();
-  }
-  alignUvw(negTarget: Vector3, upVector: Vector3 = null) {
-    // TODO: Complete this
-    const backwardVector = this.calcBackwardVector(negTarget);
-    if (upVector === null) {
-      upVector = this.calcAnOrthogonal(backwardVector)
-    }
-    const [u, v, w] = this.calcAxesRef(negTarget, upVector);
-
-    // Inverse of the alignment matrix, which is orthogonal
-    const matrix: Matrix = Matrix.FromArray([
-      u.x, u.y, u.z, 0,
-      v.x, v.y, v.z, 0,
-      w.x, w.y, w.z, 0,
-      0, 0, 0, 1
-    ]);
+    )
+    return directionUp.multiplyByFloats(
+      this.jumpSpeed,
+      this.jumpSpeed,
+      this.jumpSpeed
+    )
   }
   move(command: UFICommand) {
+    // console.log(`displacement gravity physicsEnabled: ${command.displacement} ${this.scene.gravity} ${this.scene.physicsEnabled}`);
+
     const deltaTime = this.calcDeltaTime();
+    if (deltaTime === undefined) {
+      return;
+    }
     const [u, v, w] = this.calcAxesRef(command.negTarget, command.up);
-    const unitDirection = this.calcUnitDirection(command.displacement, u, v, w);
+    const velocityOnUWPlane = this.calcVelocityOnUWPlane(command.displacement, u, w);
+    const velocityOnV = this.calcVelocityOnV(command.displacement, v);
 
     if (this.compoundMesh.physicsImpostor === undefined) {
-      const displacementNorm = this.speed * deltaTime;
-      const displacement: Vector3 = new Vector3(
-        displacementNorm,
-        displacementNorm,
-        displacementNorm
-      );
-      this.compoundMesh.position.addInPlace(displacement.multiply(unitDirection))
+      const velocity = velocityOnUWPlane.add(velocityOnV);
+      const displacement = velocity.multiplyByFloats(
+        deltaTime,
+        deltaTime,
+        deltaTime
+      )
+      this.compoundMesh.position.addInPlace(displacement);
     }
     else {
       const jumpCollider: JumpCollider = <JumpCollider>this.collider;
       if (jumpCollider === undefined) {
         throw TypeError("jumpCollider is undefined");
       }
-      // console.log(`jumpCollider.onObject: ${jumpCollider.onObject}`);
-      // console.log(`unitDirection: ${unitDirection}`);
-      // console.log(`this.scene.gravity: ${this.scene.gravity}`);
-      console.log(`command.gravity: ${command.gravity}`);
-      if (command.displacement.y !== 0) {
-        const jumpVelocity: Vector3 = unitDirection.multiplyByFloats(
-          this.jumpSpeed,
-          this.jumpSpeed,
-          this.jumpSpeed,
-        );
-        if (jumpCollider.onObject || command.test) {
-          this.compoundMesh.physicsImpostor.wakeUp();
-          this.compoundMesh.physicsImpostor.setLinearVelocity(jumpVelocity);
-          jumpCollider.onObject = false;
-        }
+      if (jumpCollider.onObject || (command.test && command.gravity.equals(Vector3.Zero()))) {
+        this.jumpsLeft = this.jumpCount;
+      }
+      if (this.jumpsLeft > 0 && command.displacement.y !== 0) {
+        --this.jumpsLeft;
+        this.compoundMesh.physicsImpostor.wakeUp();
+        this.compoundMesh.physicsImpostor.setLinearVelocity(velocityOnV);
+        jumpCollider.onObject = false;
       }
       else if (command.displacement.x !== 0 || command.displacement.z !== 0) {
-        const velocity: Vector3 = unitDirection.multiplyByFloats(
-          this.speed,
-          this.speed,
-          this.speed
-        );
-
         this.compoundMesh.physicsImpostor.wakeUp();
         const currVelocity = this.compoundMesh.physicsImpostor.getLinearVelocity();
         currVelocity.x = 0;
         currVelocity.z = 0;
-
-        this.compoundMesh.physicsImpostor.setLinearVelocity(velocity.add(currVelocity));
-      }
-      else if (jumpCollider.onObject || (command.test && command.gravity.equals(Vector3.Zero()))) {
-        this.compoundMesh.physicsImpostor.sleep();
+        this.compoundMesh.physicsImpostor.setLinearVelocity(velocityOnUWPlane.add(currVelocity));
       }
       else {
-        this.compoundMesh.physicsImpostor.wakeUp();
+        if (jumpCollider.onObject || (command.test && command.gravity.equals(Vector3.Zero()))) {
+          this.compoundMesh.physicsImpostor.sleep();
+        }
+        if (command.test && !command.gravity.equals(Vector3.Zero())) {
+          this.compoundMesh.physicsImpostor.wakeUp();
+        }
+        const currVelocity = this.compoundMesh.physicsImpostor.getLinearVelocity();
+        currVelocity.x = 0;
+        currVelocity.z = 0;
+        this.compoundMesh.physicsImpostor.setLinearVelocity(currVelocity);
       }
     }
   }

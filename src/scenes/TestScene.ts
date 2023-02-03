@@ -11,16 +11,23 @@ import TestController from "../controllers/TestController";
 import Player from "../objects/Player";
 import { Controller } from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
-import { PLAYER_DIR, PLAYER_IMG_DIR, SPRITESHEET_DIR, SPRITESHEET_MAP_DIR } from "../globals";
+import { GRAVITY, PLAYER_DIR, PLAYER_IMG_DIR, SPRITESHEET_DIR, SPRITESHEET_MAP_DIR } from "../globals";
 
 export default class TestScene extends BaseScene {
   player: Player;
   controller: Controller;
-  // constructor(engine: Engine, canvas: any) {
-  //   super(engine, canvas);
-  async initialize() {
+  constructor(engine: Engine, canvas: any) {
+    super(engine, canvas);
     //CREATE OBJECTS
     this.player = new Player(this, 1, 1, new Vector3(1, 2, 3));
+    console.log(`this.player.compoundMesh.position:${this.player.compoundMesh.position}`);
+
+    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+    var light = new HemisphericLight("light", new Vector3(0, 1, 0), this);
+
+    let camera = new UFICamera(this, this.canvas, this.player.compoundMesh.position);
+
+    this.player.setCamera(camera);
 
     // this.player.setTexture(SPRITESHEET_DIR);
     // this.player.mapSprites(SPRITESHEET_MAP_DIR);
@@ -29,11 +36,7 @@ export default class TestScene extends BaseScene {
     this.player.setDynamicTexture();
     this.player.drawDynamicTexture(PLAYER_IMG_DIR);
 
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new HemisphericLight("light", new Vector3(0, 1, 0), this);
 
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
 
     // Our built-in 'ground' shape, call once, singleton doesnt work due to hot-reload
     let ground = new UFIGround(this, 60, 60);
@@ -47,14 +50,12 @@ export default class TestScene extends BaseScene {
     let ball4 = MeshBuilder.CreateSphere('', { diameter: 1, segments: 4 }, this);
     let ball5 = MeshBuilder.CreateSphere('', { diameter: 1, segments: 4 }, this);
 
-    ball2.position = new Vector3(1, 2, 3);
+    // ball2.position = new Vector3(1, 2, 3);
     ball3.position = new Vector3(2, 4, 6);
     ball4.position = new Vector3(5, 4, 20);
     ball5.position = new Vector3(5, 4, -20);
 
-    let camera = new UFICamera(this, this.canvas, this.player.compoundMesh.position);
 
-    this.player.setCamera(camera);
     // this.player.setCollider(
     //   new JumpCollider(
     //     this,
@@ -77,13 +78,13 @@ export default class TestScene extends BaseScene {
       )
     );
     //ENABLE PHYSICS
-    this.addPhysics();
+    this.addPhysics(GRAVITY);
     this.player.addPhysics(1);
     ground.addPhysics();
     dummy.addPhysics();
     //CONTROLLER
-    this.controller = new TestController(this, this.canvas);
-    // this.controller = new PlayerController(this, this.canvas);
+    // this.controller = new TestController(this, this.canvas);
+    this.controller = new PlayerController(this, this.canvas);
     this.player.addController(this.controller);
   }
 }
