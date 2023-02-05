@@ -6,8 +6,8 @@ import UFICamera from "./UFICamera";
 import { FPS_COUNT_ } from "../globals";
 import { UFICommand } from "../controllers/Controller";
 import BaseScene from "../scenes/BaseScene";
-import UFITimer from "./UFITimer";
-import UFIAnimation from "./UFIAnimation";
+import UFITimer from "../time/UFITimer";
+import UFIAnimation from "../time/UFIAnimation";
 // All EntityObject instances can move
 export default class EntityObject {
   mesh: Mesh = undefined;
