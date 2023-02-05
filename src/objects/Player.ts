@@ -1,4 +1,3 @@
-import TexturedPlane from "./TexturedPlane";
 import {
   ArcRotateCamera,
   Vector3,
@@ -9,7 +8,6 @@ import {
 } from "babylonjs";
 import { Controller, UFICommand } from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
-import { PLAYER_IMG_DIR, PLAYER_DIR } from "../globals";
 import UFIPlane from "./UFIPlane";
 
 export default class Player extends UFIPlane {

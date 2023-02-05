@@ -1,5 +1,4 @@
 import { Color3, Engine, HemisphericLight, MeshBuilder, PhysicsImpostor, Vector3 } from "babylonjs";
-import FacingPlane from "../objects/FacingPlane";
 import UFIPlane from "../objects/UFIPlane";
 
 import UFIGround from "../objects/UFIGround";
@@ -7,11 +6,25 @@ import BaseScene from "./BaseScene";
 
 import { BoxCollider, JumpCollider } from "../objects/Collider";
 import UFICamera from "../objects/UFICamera";
-import TestController from "../controllers/TestController";
 import Player from "../objects/Player";
 import { Controller } from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
-import { GRAVITY, PLAYER_DIR, PLAYER_IMG_DIR, SPRITESHEET_DIR, SPRITESHEET_MAP_DIR } from "../globals";
+import {
+  GRAVITY,
+  SPRITESHEET_DIR,
+  SPRITESHEET_MAP_DIR,
+  PLAYER_IDLE,
+  PLAYER_WALKING_F1,
+  PLAYER_WALKING_F2,
+  PLAYER_WALKING_B1,
+  PLAYER_WALKING_B2,
+  PLAYER_WALKING_R1,
+  PLAYER_WALKING_R2,
+  PLAYER_WALKING_L1,
+  PLAYER_WALKING_L2
+} from "../globals";
+import UFIAnimation from "../objects/UFIAnimation";
+import AnimatedController from "../controllers/AnimatedController";
 
 export default class TestScene extends BaseScene {
   player: Player;
@@ -19,6 +32,9 @@ export default class TestScene extends BaseScene {
   constructor(engine: Engine, canvas: any) {
     super(engine, canvas);
     //CREATE OBJECTS
+
+
+
     this.player = new Player(this, 1, 1, new Vector3(1, 2, 3));
     console.log(`this.player.compoundMesh.position:${this.player.compoundMesh.position}`);
 
@@ -29,12 +45,16 @@ export default class TestScene extends BaseScene {
 
     this.player.setCamera(camera);
 
+    // console.log(SPRITESHEET_DIR);
+    // console.log(SPRITESHEET_MAP_DIR);
+
+
     // this.player.setTexture(SPRITESHEET_DIR);
     // this.player.mapSprites(SPRITESHEET_MAP_DIR);
     // this.player.drawSprite();
 
     this.player.setDynamicTexture();
-    this.player.drawDynamicTexture(PLAYER_IMG_DIR);
+    // this.player.drawDynamicTexture(PLAYER_IDLE);
 
 
 
@@ -84,7 +104,35 @@ export default class TestScene extends BaseScene {
     dummy.addPhysics();
     //CONTROLLER
     // this.controller = new TestController(this, this.canvas);
-    this.controller = new PlayerController(this, this.canvas);
+    // this.controller = new PlayerController(this, this.canvas);
+    this.controller = new AnimatedController(
+      this,
+      this.canvas,
+      [PLAYER_IDLE],
+      [
+        PLAYER_WALKING_F1,
+        PLAYER_WALKING_F2
+      ],
+      [
+        PLAYER_WALKING_B1,
+        PLAYER_WALKING_B2
+      ],
+      [
+        PLAYER_WALKING_L1,
+        PLAYER_WALKING_L2
+      ],
+      [
+        PLAYER_WALKING_R1,
+        PLAYER_WALKING_R2
+      ]
+    );
+    this.player.addAnimation((<AnimatedController>this.controller).idleAnim);
+    this.player.addAnimation((<AnimatedController>this.controller).walkingFAnim);
+    this.player.addAnimation((<AnimatedController>this.controller).walkingBAnim);
+    this.player.addAnimation((<AnimatedController>this.controller).walkingLAnim);
+    this.player.addAnimation((<AnimatedController>this.controller).walkingRAnim);
     this.player.addController(this.controller);
+
+    // console.log(walkingAnim.obj);
   }
 }

@@ -13,7 +13,6 @@ export default class PlayerController extends TestController {
   listenInput() {
     const inputMap = this.inputMapQueue[0];
     this.command.displacement = Vector3.Zero();
-
     if (inputMap["w"]) {
       this.command.displacement.addInPlace(Vector3.Forward());
     }
