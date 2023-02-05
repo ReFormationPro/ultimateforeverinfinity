@@ -1,5 +1,5 @@
 import { Scene } from "babylonjs";
-import EntityObject from "./EntityObject";
+import EntityObject from "../objects/EntityObject";
 import UFITimer from "./UFITimer";
 
 export default class UFIAnimation {

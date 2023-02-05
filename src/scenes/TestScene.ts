@@ -23,7 +23,7 @@ import {
   PLAYER_WALKING_L1,
   PLAYER_WALKING_L2
 } from "../globals";
-import UFIAnimation from "../objects/UFIAnimation";
+import UFIAnimation from "../time/UFIAnimation";
 import AnimatedController from "../controllers/AnimatedController";
 
 export default class TestScene extends BaseScene {

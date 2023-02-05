@@ -6,8 +6,8 @@ import UFICamera from "./UFICamera";
 import { FPS_COUNT_ } from "../globals";
 import { UFICommand } from "../controllers/Controller";
 import BaseScene from "../scenes/BaseScene";
-import UFITimer from "./UFITimer";
-import UFIAnimation from "./UFIAnimation";
+import UFITimer from "../time/UFITimer";
+import UFIAnimation from "../time/UFIAnimation";
 // All EntityObject instances can move
 export default class EntityObject {
   mesh: Mesh = undefined;
@@ -137,7 +137,7 @@ export default class EntityObject {
     this.mesh.material = stdMat;
   }
   drawDynamicTexture(url: string) {
-    this.clearDynamicTexture();
+    this.setDynamicTexture();
     console.log(url);
     const dynamicTexture = <DynamicTexture>this.texture
 
@@ -145,17 +145,6 @@ export default class EntityObject {
     var img = new Image();
     img.src = url;
     // console.log(img, url);
-    img.onload = function () {
-      ctx.drawImage(this, 0, 0);
-      dynamicTexture.update();
-    }
-  }
-  clearDynamicTexture() {
-    const dynamicTexture = <DynamicTexture>this.texture
-
-    var ctx = dynamicTexture.getContext();
-    var img = new Image();
-    img.style.backgroundColor = "red";
     img.onload = function () {
       ctx.drawImage(this, 0, 0);
       dynamicTexture.update();

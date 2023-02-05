@@ -1,6 +1,6 @@
 import { Scene, Vector3 } from "babylonjs";
 import PlayerController from "./PlayerController";
-import UFIAnimation from "../objects/UFIAnimation";
+import UFIAnimation from "../time/UFIAnimation";
 
 export default class AnimatedController extends PlayerController {
     idle: boolean = true;
