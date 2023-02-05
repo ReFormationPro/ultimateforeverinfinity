@@ -1,4 +1,4 @@
-import { AssetsManager, Camera, DynamicTexture, ISpriteJSONAtlas, Material, Matrix, Mesh, PhysicsImpostor, SpriteMap, StandardMaterial, TextFileAssetTask, Texture, Vector2 } from "babylonjs";
+import { AssetsManager, Camera, DynamicTexture, Engine, ISpriteJSONAtlas, Material, Matrix, Mesh, PhysicsImpostor, SpriteMap, StandardMaterial, TextFileAssetTask, Texture, Vector2 } from "babylonjs";
 import { Scene, Vector3 } from "babylonjs";
 import Player from "./Player";
 import { BoxCollider, Collider, JumpCollider } from "./Collider";
@@ -6,6 +6,8 @@ import UFICamera from "./UFICamera";
 import { FPS_COUNT_ } from "../globals";
 import { UFICommand } from "../controllers/Controller";
 import BaseScene from "../scenes/BaseScene";
+import UFITimer from "./UFITimer";
+import UFIAnimation from "./UFIAnimation";
 // All EntityObject instances can move
 export default class EntityObject {
   mesh: Mesh = undefined;
@@ -15,6 +17,7 @@ export default class EntityObject {
   texture: Texture = undefined;
   material: Material = undefined;
   spriteMap: SpriteMap = undefined;
+  timer: UFITimer = undefined;
 
   name: string;
   static index = 0;
@@ -48,6 +51,8 @@ export default class EntityObject {
     this.name = `${prefix}${EntityObject.index++}`;
     this.position = position;
     this.rotation = rotation;
+    this.timer = new UFITimer(scene);
+    // this.timer = new UFITimer(scene, true, 3, () => undefined, "cuckold");
   }
   createCompundMesh() {
     // console.log(this.position);
@@ -65,21 +70,21 @@ export default class EntityObject {
     this.cam.camObj.lockedTarget = camMesh;
   }
   setTexture(
-    url: string,
-    noMipMaps: boolean = false,
+    obj: Blob | MediaSource,
     samplingMode: number = Texture.NEAREST_NEAREST
   ) {
-    console.log(url);
     // Load the spritesheet (with appropriate settings) associated with the JSON Atlas.
-    this.texture = new Texture(url, this.scene,
-      noMipMaps, //NoMipMaps
+    this.texture = new Texture(
+      "../../demoassets/player/spritesheet.png",
+      this.scene,
+      false, //NoMipMaps
       false, //InvertY usually false if exported from TexturePacker
       samplingMode, //Sampling Mode
       () => console.log("Load successful"), //Onload, you could spin up the sprite map in a function nested here
       (msg: string, e: any) => console.log(msg, e), //OnError
       null, //CustomBuffer
       false, //DeleteBuffer
-      BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA
+      Engine.TEXTUREFORMAT_RGBA //ImageFormageType RGBA
     );
   }
   async mapSprites(
@@ -87,18 +92,25 @@ export default class EntityObject {
     maxAnimationFrames = 2
   ) {
 
+    // this.assetsManager = new AssetsManager(this.scene);
+    // const textTask = assetsManager.addTextFileTask("text task", "textures/spriteMap/none_trimmed/Legends_Level_A.json");
+
     this.spriteMap = new SpriteMap(
       `${this.name}SpriteMap`,
-      atlasJSON, this.texture, {
-      maxAnimationFrames: maxAnimationFrames,
-      stageSize: new Vector2(1, 1),
-      flipU: true
-    }, this.scene
+      atlasJSON,
+      this.texture,
+      {
+        maxAnimationFrames: maxAnimationFrames,
+        stageSize: new Vector2(1, 1),
+        flipU: true
+      },
+      this.scene
     )
   }
   drawSprite(spriteIndex: number = 0) {
     this.spriteMap.changeTiles(0, new Vector2(0, 0), spriteIndex)
   }
+
   setDynamicTexture(
     width: number = 64,
     height: number = width,
@@ -125,6 +137,7 @@ export default class EntityObject {
     this.mesh.material = stdMat;
   }
   drawDynamicTexture(url: string) {
+    this.clearDynamicTexture();
     console.log(url);
     const dynamicTexture = <DynamicTexture>this.texture
 
@@ -132,6 +145,17 @@ export default class EntityObject {
     var img = new Image();
     img.src = url;
     // console.log(img, url);
+    img.onload = function () {
+      ctx.drawImage(this, 0, 0);
+      dynamicTexture.update();
+    }
+  }
+  clearDynamicTexture() {
+    const dynamicTexture = <DynamicTexture>this.texture
+
+    var ctx = dynamicTexture.getContext();
+    var img = new Image();
+    img.style.backgroundColor = "red";
     img.onload = function () {
       ctx.drawImage(this, 0, 0);
       dynamicTexture.update();
@@ -149,6 +173,9 @@ export default class EntityObject {
       }
       this.collider.activate();
     }
+  }
+  addAnimation(animation: UFIAnimation) {
+    animation.obj = this;
   }
   addPhysics(mass: number = 0, restitution: number = 0, friction: number = 0) {
     this.mesh.physicsImpostor = new PhysicsImpostor(
@@ -170,15 +197,6 @@ export default class EntityObject {
     );
     //this removes the shaky behavior
     this.compoundMesh.physicsImpostor.physicsBody.angularDamping = 1;
-  }
-  calcDeltaTime() {
-    this.prevFrameTime = this.frameTime;
-    this.frameTime = Date.now() / 1000;
-    if (this.prevFrameTime === undefined) {
-      this.prevFrameTime = this.frameTime;
-      return undefined;
-    }
-    return this.frameTime - this.prevFrameTime;
   }
   calcBackwardVector(negTarget: Vector3, yZero: boolean = true) {
 
@@ -239,7 +257,7 @@ export default class EntityObject {
   move(command: UFICommand) {
     // console.log(`displacement gravity physicsEnabled: ${command.displacement} ${this.scene.gravity} ${this.scene.physicsEnabled}`);
 
-    const deltaTime = this.calcDeltaTime();
+    const deltaTime = this.timer.calcDeltaTime();
     if (deltaTime === undefined) {
       return;
     }

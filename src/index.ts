@@ -1,4 +1,4 @@
-import { Engine } from "babylonjs";
+import { Engine, SceneLoader } from "babylonjs";
 import TestScene from "./scenes/TestScene";
 
 export const start = async () => {
