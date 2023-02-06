@@ -61,6 +61,6 @@ export default class AnimatedController extends PlayerController {
         }
         this.inputMapQueue.unshift(inputMap);
 
-        this.move();
+        this.move(this.player.cam.camObj.position);
     }
 }

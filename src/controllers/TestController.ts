@@ -88,18 +88,11 @@ export default class TestController extends Controller {
     }
     this.inputMapQueue.unshift(inputMap);
 
-    this.move();
+    this.move(this.player.cam.camObj.position);
   };
-  calcUpVector() {
-    if (this.player.compoundMesh.physicsImpostor === undefined || this.command.gravity.equals(Vector3.Zero())) {
-      this.command.up = Vector3.Up()
-    }
-    else {
-      this.command.up = this.command.gravity.negate().normalize();
-    }
-  }
-  setTarget() {
+
+  setNegTarget(negTarget: Vector3) {
     this.command.negTarget = Vector3.Zero();
-    this.command.negTarget.copyFrom(this.player.cam.camObj.position);
+    this.command.negTarget.copyFrom(negTarget);
   }
 }

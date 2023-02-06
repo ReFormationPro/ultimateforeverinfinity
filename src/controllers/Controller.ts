@@ -74,14 +74,21 @@ export abstract class Controller {
     //   }
     // })
   }
-  move() {
-    this.setTarget();
+  move(negTarget: Vector3) {
+    this.setNegTarget(negTarget);
     this.calcUpVector();
     this.player.move(this.command);
   }
   rotate() { }
+  calcUpVector() {
+    if (!this.scene.physicsEnabled || this.command.gravity.equals(Vector3.Zero())) {
+      this.command.up = Vector3.Up()
+    }
+    else {
+      this.command.up = this.command.gravity.negate().normalize();
+    }
+  }
   // children should implement these
-  setTarget() { }
-  calcUpVector() { }
+  setNegTarget(negTarget: Vector3) { }
   listenInput() { }
 }

@@ -25,6 +25,7 @@ import {
 } from "../globals";
 import UFIAnimation from "../time/UFIAnimation";
 import AnimatedController from "../controllers/AnimatedController";
+import TestController from "../controllers/TestController";
 
 export default class TestScene extends BaseScene {
   player: Player;
@@ -134,8 +135,8 @@ export default class TestScene extends BaseScene {
       controller.walkingLAnim,
       controller.walkingRAnim
     ]);
-    this.player.addController(this.controller);
 
+    this.player.addController(this.controller);
     // console.log(walkingAnim.obj);
   }
 }

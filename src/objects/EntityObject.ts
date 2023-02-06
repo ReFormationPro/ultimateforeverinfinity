@@ -278,12 +278,12 @@ export default class EntityObject {
     const velocityOnUWPlane = this.calcVelocityOnUWPlane(command.displacement, u, w);
     const velocityOnV = this.calcVelocityOnV(command.displacement, v);
 
-    if (this.compoundMesh.physicsImpostor === undefined) {
+    if (!this.scene.physicsEnabled) {
       const velocity = velocityOnUWPlane.add(velocityOnV);
       const displacement = velocity.multiplyByFloats(
-        deltaTime,
-        deltaTime,
-        deltaTime
+        deltaTime * 100,
+        deltaTime * 100,
+        deltaTime * 100
       )
       this.compoundMesh.position.addInPlace(displacement);
     }
