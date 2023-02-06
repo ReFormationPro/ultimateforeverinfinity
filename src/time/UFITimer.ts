@@ -63,8 +63,6 @@ export default class UFITimer {
             }
         }
         else if (!this.calledSinceStart) {
-            console.log("wtf");
-
             this.callback(this.args);
             this.calledSinceStart = true;
         }

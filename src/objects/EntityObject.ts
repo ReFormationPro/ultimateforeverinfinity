@@ -164,9 +164,17 @@ export default class EntityObject {
       this.collider.activate();
     }
   }
-  addAnimation(animation: UFIAnimation) {
-    animation.obj = this;
-    this.animations.push(animation);
+  addAnimation(animation: UFIAnimation | object) {
+    if (animation instanceof (UFIAnimation)) {
+      animation.obj = this;
+      this.animations.push(animation);
+    }
+    else if (animation instanceof (Array)) {
+      for (const anim of animation) {
+        anim.obj = this;
+      }
+      this.animations = animation;
+    }
   }
   stopAllAnimationsExcept(anim: UFIAnimation) {
     for (const animation of this.animations) {

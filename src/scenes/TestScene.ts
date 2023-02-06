@@ -126,11 +126,14 @@ export default class TestScene extends BaseScene {
         PLAYER_WALKING_R2
       ]
     );
-    this.player.addAnimation((<AnimatedController>this.controller).idleAnim);
-    this.player.addAnimation((<AnimatedController>this.controller).walkingFAnim);
-    this.player.addAnimation((<AnimatedController>this.controller).walkingBAnim);
-    this.player.addAnimation((<AnimatedController>this.controller).walkingLAnim);
-    this.player.addAnimation((<AnimatedController>this.controller).walkingRAnim);
+    const controller = (<AnimatedController>this.controller);
+    this.player.addAnimation([
+      controller.idleAnim,
+      controller.walkingFAnim,
+      controller.walkingBAnim,
+      controller.walkingLAnim,
+      controller.walkingRAnim
+    ]);
     this.player.addController(this.controller);
 
     // console.log(walkingAnim.obj);
