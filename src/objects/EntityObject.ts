@@ -130,7 +130,6 @@ export default class EntityObject {
       generateMipMaps,
       samplingMode
     );
-
     const stdMat = <StandardMaterial>this.material;
     stdMat.diffuseTexture = this.texture;
     stdMat.diffuseTexture.hasAlpha = true;
@@ -138,7 +137,6 @@ export default class EntityObject {
     this.mesh.material = stdMat;
   }
   drawDynamicTexture(url: string) {
-    this.setDynamicTexture();
     // console.log(url);
     const dynamicTexture = <DynamicTexture>this.texture
 
@@ -146,7 +144,10 @@ export default class EntityObject {
     var img = new Image();
     img.src = url;
     // console.log(img, url);
+    const self = this;
     img.onload = function () {
+      const txtSize = self.texture.getSize()
+      ctx.clearRect(0, 0, txtSize.width, txtSize.height);
       ctx.drawImage(this, 0, 0);
       dynamicTexture.update();
     }
