@@ -23,7 +23,7 @@ export default class UFIAnimation {
         if (self === undefined) {
             self = this;
         }
-        console.log(self);
+        // console.log(self);
         self.obj.drawDynamicTexture(self.range[self.index]);
         self.index = (self.index + 1) % self.range.length;
     }

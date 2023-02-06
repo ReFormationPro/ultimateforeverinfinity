@@ -12,6 +12,7 @@ export default class UFITimer {
     callback: (args: Array<any>) => any = undefined;
     args: Array<any> | any = undefined;
     enabled: boolean = false;
+    calledSinceStart: boolean = false;
     constructor(
         scene: Scene,
         enabled: boolean = false,
@@ -44,6 +45,8 @@ export default class UFITimer {
         }
     }
     disable() {
+        this.calledSinceStart = false;
+
         if (this.enabled) {
             this.scene.onBeforeRenderObservable.remove(this.observer);
             this.enabled = false;
@@ -51,11 +54,19 @@ export default class UFITimer {
     }
 
     callbackOnTimeout() {
-        this.secondsLeft -= this.deltaTime;
-        if (this.secondsLeft <= 0) {
-            console.log(`${this.secondsTimeout} passed`);
-            this.secondsLeft = this.secondsTimeout;
+        if (this.secondsTimeout !== 0) {
+            this.secondsLeft -= this.deltaTime;
+            if (this.secondsLeft <= 0) {
+                // console.log(`${this.secondsTimeout} passed`);
+                this.secondsLeft = this.secondsTimeout;
+                this.callback(this.args);
+            }
+        }
+        else if (!this.calledSinceStart) {
+            console.log("wtf");
+
             this.callback(this.args);
+            this.calledSinceStart = true;
         }
 
     }
