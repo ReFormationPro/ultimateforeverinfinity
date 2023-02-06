@@ -40,7 +40,8 @@ export default class EntityObject {
   static GROUND_HEIGHT: number = 0;
 
   supportsPhysics: Boolean = false;
-
+  //animation
+  animations: Array<UFIAnimation> = [];
   constructor(
     scene: Scene,
     prefix: string,
@@ -138,7 +139,7 @@ export default class EntityObject {
   }
   drawDynamicTexture(url: string) {
     this.setDynamicTexture();
-    console.log(url);
+    // console.log(url);
     const dynamicTexture = <DynamicTexture>this.texture
 
     var ctx = dynamicTexture.getContext();
@@ -165,6 +166,20 @@ export default class EntityObject {
   }
   addAnimation(animation: UFIAnimation) {
     animation.obj = this;
+    this.animations.push(animation);
+  }
+  stopAllAnimationsExcept(anim: UFIAnimation) {
+    for (const animation of this.animations) {
+      this.startIfEqual(anim, animation);
+    }
+  }
+  startIfEqual(anim1: UFIAnimation, anim2: UFIAnimation) {
+    if (anim1 === anim2) {
+      anim2.start()
+    }
+    else {
+      anim2.stop()
+    }
   }
   addPhysics(mass: number = 0, restitution: number = 0, friction: number = 0) {
     this.mesh.physicsImpostor = new PhysicsImpostor(
