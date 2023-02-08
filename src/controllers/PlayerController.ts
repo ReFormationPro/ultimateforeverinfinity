@@ -31,6 +31,6 @@ export default class PlayerController extends TestController {
     }
     this.inputMapQueue.unshift(inputMap);
 
-    this.move();
+    this.move(this.player.cam.camObj.position);
   }
 }

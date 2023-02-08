@@ -19,17 +19,20 @@ export default class UFIAnimation {
         this.delayInSeconds = secondsBetweenFrames;
     }
 
-    animateNextFrame(self = undefined) {
-        if (self === undefined) {
-            self = this;
-        }
-        // console.log(self);
-        self.obj.drawDynamicTexture(self.range[self.index]);
-        self.index = (self.index + 1) % self.range.length;
+    animateNextFrame() {
+        // console.log(this);
+        this.obj.drawDynamicTexture(this.range[this.index]);
+        this.index = (this.index + 1) % this.range.length;
     }
     start() {
         if (this.timer === undefined) {
-            this.timer = new UFITimer(this.scene, false, this.delayInSeconds, true, this.animateNextFrame, this);
+            this.timer = new UFITimer(
+                this.scene,
+                false,
+                this.delayInSeconds,
+                true,
+                this.animateNextFrame.bind(this),
+            );
         }
         this.timer.enable();
     }

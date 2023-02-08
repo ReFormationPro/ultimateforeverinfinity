@@ -130,7 +130,6 @@ export default class EntityObject {
       generateMipMaps,
       samplingMode
     );
-
     const stdMat = <StandardMaterial>this.material;
     stdMat.diffuseTexture = this.texture;
     stdMat.diffuseTexture.hasAlpha = true;
@@ -138,7 +137,6 @@ export default class EntityObject {
     this.mesh.material = stdMat;
   }
   drawDynamicTexture(url: string) {
-    this.setDynamicTexture();
     // console.log(url);
     const dynamicTexture = <DynamicTexture>this.texture
 
@@ -146,7 +144,10 @@ export default class EntityObject {
     var img = new Image();
     img.src = url;
     // console.log(img, url);
+    const self = this;
     img.onload = function () {
+      const txtSize = self.texture.getSize()
+      ctx.clearRect(0, 0, txtSize.width, txtSize.height);
       ctx.drawImage(this, 0, 0);
       dynamicTexture.update();
     }
@@ -164,9 +165,17 @@ export default class EntityObject {
       this.collider.activate();
     }
   }
-  addAnimation(animation: UFIAnimation) {
-    animation.obj = this;
-    this.animations.push(animation);
+  addAnimation(animation: UFIAnimation | object) {
+    if (animation instanceof (UFIAnimation)) {
+      animation.obj = this;
+      this.animations.push(animation);
+    }
+    else if (animation instanceof (Array)) {
+      for (const anim of animation) {
+        anim.obj = this;
+      }
+      this.animations = animation;
+    }
   }
   stopAllAnimationsExcept(anim: UFIAnimation) {
     for (const animation of this.animations) {
@@ -269,12 +278,12 @@ export default class EntityObject {
     const velocityOnUWPlane = this.calcVelocityOnUWPlane(command.displacement, u, w);
     const velocityOnV = this.calcVelocityOnV(command.displacement, v);
 
-    if (this.compoundMesh.physicsImpostor === undefined) {
+    if (!this.scene.physicsEnabled) {
       const velocity = velocityOnUWPlane.add(velocityOnV);
       const displacement = velocity.multiplyByFloats(
-        deltaTime,
-        deltaTime,
-        deltaTime
+        deltaTime * 100,
+        deltaTime * 100,
+        deltaTime * 100
       )
       this.compoundMesh.position.addInPlace(displacement);
     }
