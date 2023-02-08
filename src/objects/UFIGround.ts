@@ -1,5 +1,4 @@
-import { Scene, MeshBuilder, Mesh, PhysicsImpostor } from "babylonjs";
-import BaseScene from "../scenes/BaseScene";
+import { Scene, MeshBuilder } from "babylonjs";
 import EntityObject from "./EntityObject";
 export default class UFIGround extends EntityObject {
   scene: Scene;

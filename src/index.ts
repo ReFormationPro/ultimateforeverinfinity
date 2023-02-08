@@ -1,5 +1,6 @@
 import { Engine, SceneLoader } from "babylonjs";
 import TestScene from "./scenes/TestScene";
+import TestScene2 from "./scenes/TestScene2";
 
 export const start = async () => {
   if (Engine.isSupported()) {
@@ -9,7 +10,7 @@ export const start = async () => {
       lockstepMaxSteps: 4
     });
 
-    const scene = new TestScene(engine, canvas);
+    const scene = new TestScene2(engine, canvas);
     // Hide loading icon
     const loader = document.querySelectorAll(".is-active")[0];
     loader.className = loader.className.replace("is-active", "");

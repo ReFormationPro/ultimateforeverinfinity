@@ -190,22 +190,27 @@ export default class EntityObject {
       anim2.stop()
     }
   }
-  addPhysics(mass: number = 0, restitution: number = 0, friction: number = 0) {
+  addPhysics(
+    mass: number = 0,
+    restitution: number = 0,
+    friction: number = 0,
+    impostorType: number = PhysicsImpostor.BoxImpostor
+  ) {
     this.mesh.physicsImpostor = new PhysicsImpostor(
       this.mesh,
-      PhysicsImpostor.BoxImpostor,
+      impostorType,
       { mass: 0, restitution: 0 }
     );
     if (this.collider !== undefined && this.collider.mesh !== undefined) {
       this.collider.mesh.physicsImpostor = new PhysicsImpostor(
         this.collider.mesh,
-        PhysicsImpostor.BoxImpostor,
+        impostorType,
         { mass: 0, restitution: 0 }
       );
     }
     this.compoundMesh.physicsImpostor = new PhysicsImpostor(
       this.compoundMesh,
-      PhysicsImpostor.BoxImpostor,
+      impostorType,
       { mass: mass, restitution: restitution, friction: friction }
     );
     //this removes the shaky behavior
