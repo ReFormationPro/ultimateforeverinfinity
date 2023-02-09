@@ -21,7 +21,8 @@ import {
   PLAYER_WALKING_R1,
   PLAYER_WALKING_R2,
   PLAYER_WALKING_L1,
-  PLAYER_WALKING_L2
+  PLAYER_WALKING_L2,
+  canvas
 } from "../globals";
 import UFIAnimation from "../time/UFIAnimation";
 import AnimatedController from "../controllers/AnimatedController";
@@ -30,19 +31,16 @@ import TestController from "../controllers/TestController";
 export default class TestScene extends BaseScene {
   player: Player;
   controller: Controller;
-  constructor(engine: Engine, canvas: any) {
-    super(engine, canvas);
+  constructor() {
+    super();
     //CREATE OBJECTS
-
-
-
     this.player = new Player(this, 1, 1, new Vector3(1, 2, 3));
     console.log(`this.player.compoundMesh.position:${this.player.compoundMesh.position}`);
 
     // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
     var light = new HemisphericLight("light", new Vector3(0, 1, 0), this);
 
-    let camera = new UFICamera(this, this.canvas, this.player.compoundMesh.position);
+    let camera = new UFICamera(this, canvas, this.player.compoundMesh.position);
 
     this.player.setCamera(camera);
 
@@ -104,11 +102,11 @@ export default class TestScene extends BaseScene {
     ground.addPhysics();
     dummy.addPhysics();
     //CONTROLLER
-    // this.controller = new TestController(this, this.canvas);
-    // this.controller = new PlayerController(this, this.canvas);
+    // this.controller = new TestController(this, canvas);
+    // this.controller = new PlayerController(this, canvas);
     this.controller = new AnimatedController(
       this,
-      this.canvas,
+      canvas,
       [PLAYER_IDLE],
       [
         PLAYER_WALKING_F1,

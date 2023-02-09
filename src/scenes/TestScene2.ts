@@ -12,6 +12,7 @@ import PlayerController from "../controllers/PlayerController";
 import {
   GRAVITY,
   PLAYER_IDLE,
+  canvas,
 } from "../globals";
 import UFIAnimation from "../time/UFIAnimation";
 import AnimatedController from "../controllers/AnimatedController";
@@ -21,8 +22,8 @@ import UFISphere from "../objects/UFISphere";
 export default class TestScene2 extends BaseScene {
   player: Player;
   controller: Controller;
-  constructor(engine: Engine, canvas: any) {
-    super(engine, canvas);
+  constructor() {
+    super();
     //CREATE OBJECTS
     this.player = new Player(this, 1, 1, new Vector3(0, 20, 0));
     console.log(`this.player.compoundMesh.position:${this.player.compoundMesh.position}`);
@@ -30,7 +31,7 @@ export default class TestScene2 extends BaseScene {
     // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
     var light = new HemisphericLight("light", new Vector3(0, 1, 0), this);
 
-    let camera = new UFICamera(this, this.canvas, this.player.compoundMesh.position);
+    let camera = new UFICamera(this, canvas, this.player.compoundMesh.position);
 
     this.player.setCamera(camera);
     this.player.setDynamicTexture();
@@ -56,10 +57,10 @@ export default class TestScene2 extends BaseScene {
     //CONTROLLER
     this.controller = new TestController(this, this.canvas);
     this.player.drawDynamicTexture(PLAYER_IDLE);
-    // this.controller = new PlayerController(this, this.canvas);
+    // this.controller = new PlayerController(this, canvas);
     // this.controller = new AnimatedController(
     //   this,
-    //   this.canvas,
+    //   canvas,
     //   [PLAYER_IDLE],
     //   [
     //     PLAYER_WALKING_F1,

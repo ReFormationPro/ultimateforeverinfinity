@@ -12,14 +12,13 @@ export default class AnimatedController extends PlayerController {
     walkingRAnim: UFIAnimation = undefined;
     constructor(
         scene: Scene,
-        canvas: any,
         idleRange: Array<string>,
         walkingFRange: Array<string>,
         walkingBRange: Array<string>,
         walkingLRange: Array<string>,
         walkingRRange: Array<string>,
     ) {
-        super(scene, canvas);
+        super(scene);
         this.idleAnim = new UFIAnimation(scene, idleRange, 0);
         this.walkingFAnim = new UFIAnimation(scene, walkingFRange, 1);
         this.walkingBAnim = new UFIAnimation(scene, walkingBRange, 1);

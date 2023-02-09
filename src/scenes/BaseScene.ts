@@ -4,14 +4,12 @@ import TestController from "../controllers/TestController";
 import Player from "../objects/Player";
 import * as CANNON from "cannon";
 import EntityObject from "../objects/EntityObject";
-import { FPS_COUNT_, GRAVITY, TIME_STEP_ } from "../globals";
+import { FPS_COUNT_, GRAVITY, TIME_STEP_, engine } from "../globals";
 export default class BaseScene extends Scene {
   pass: number = 1;
   physEngine: IPhysicsEnginePlugin = undefined;
-  canvas: any;
-  constructor(engine: Engine, canvas: any) {
+  constructor() {
     super(engine);
-    this.canvas = canvas;
     this.physicsEnabled = false;
   }
   addPhysics(gravity: Vector3) {

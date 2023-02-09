@@ -1,8 +1,9 @@
+import { canvas } from "../globals";
 import { Controller } from "./Controller";
 import { Scene, IPhysicsEnginePlugin, Vector3, KeyboardInfo } from "babylonjs";
 export default class TestController extends Controller {
-  constructor(scene: Scene, canvas: any) {
-    super(scene, canvas, [
+  constructor(scene: Scene) {
+    super(scene, [
       " "
     ]);
     this.command.test = true;
@@ -17,13 +18,13 @@ export default class TestController extends Controller {
     let isLocked = false;
     this.scene.onPointerDown = (evt) => {
       if (!isLocked) {
-        this.canvas.requestPointerLock =
-          this.canvas.requestPointerLock ||
-          this.canvas.msRequestPointerLock ||
-          this.canvas.mozRequestPointerLock ||
-          this.canvas.webkitRequestPointerLock;
-        if (this.canvas.requestPointerLock) {
-          this.canvas.requestPointerLock();
+        canvas.requestPointerLock =
+          canvas.requestPointerLock ||
+          canvas.msRequestPointerLock ||
+          canvas.mozRequestPointerLock ||
+          canvas.webkitRequestPointerLock;
+        if (canvas.requestPointerLock) {
+          canvas.requestPointerLock();
           return;
         }
       }

@@ -15,12 +15,10 @@ export abstract class Controller {
   player: Player;
   inputMapQueue: Array<object> = [{}, {}];
   singleTypeKeys: Array<string>
-  canvas: any;
   scene: Scene;
 
-  constructor(scene: Scene, canvas: any, singleTypeKeys: Array<string>) {
+  constructor(scene: Scene, singleTypeKeys: Array<string>) {
     this.scene = scene;
-    this.canvas = canvas;
     this.command = new UFICommand();
     this.singleTypeKeys = singleTypeKeys;
     scene.actionManager = new ActionManager(scene);

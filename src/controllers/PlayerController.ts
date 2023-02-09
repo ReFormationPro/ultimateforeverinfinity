@@ -2,8 +2,8 @@ import { Controller } from "./Controller";
 import { Scene, Vector3 } from "babylonjs";
 import TestController from "./TestController";
 export default class PlayerController extends TestController {
-  constructor(scene: Scene, canvas: any) {
-    super(scene, canvas);
+  constructor(scene: Scene) {
+    super(scene);
     this.command.test = false;
     this.command.gravity.copyFrom(this.scene.gravity);
     if (this.scene._physicsEngine !== undefined) {
