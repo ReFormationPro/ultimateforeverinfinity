@@ -2,6 +2,7 @@ import { Vector3, Scene, ActionManager, ExecuteCodeAction, IPhysicsEnginePlugin,
 export class UFICommand {
   displacement: Vector3 = Vector3.Zero();
   gravity: Vector3 = Vector3.Zero();
+  prevGravity: Vector3 = Vector3.Zero();
   // A coordinate in the opposite direction of the target
   negTarget: Vector3;
   // current up vector
@@ -9,6 +10,7 @@ export class UFICommand {
   test: boolean = false;
 }
 import Player from "../objects/Player";
+import BaseScene from "../scenes/BaseScene";
 export abstract class Controller {
 
   command: UFICommand;
@@ -72,21 +74,20 @@ export abstract class Controller {
     //   }
     // })
   }
-  move(negTarget: Vector3) {
-    this.setNegTarget(negTarget);
+  listen() {
+    const inputMap = this.inputMapQueue[0];
+    this.command.displacement = Vector3.Zero();
+    this.listenInput(inputMap);
+    this.inputMapQueue.unshift(inputMap);
+  }
+  move() {
+    this.setNegTarget();
     this.calcUpVector();
     this.player.move(this.command);
   }
   rotate() { }
-  calcUpVector() {
-    if (!this.scene.physicsEnabled || this.command.gravity.equals(Vector3.Zero())) {
-      this.command.up = Vector3.Up()
-    }
-    else {
-      this.command.up = this.command.gravity.negate().normalize();
-    }
-  }
   // children should implement these
-  setNegTarget(negTarget: Vector3) { }
-  listenInput() { }
+  setNegTarget() { }
+  calcUpVector() { }
+  listenInput(inputMap: object) { }
 }

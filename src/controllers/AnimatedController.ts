@@ -25,10 +25,7 @@ export default class AnimatedController extends PlayerController {
         this.walkingLAnim = new UFIAnimation(scene, walkingLRange, 1);
         this.walkingRAnim = new UFIAnimation(scene, walkingRRange, 1);
     }
-    listenInput() {
-        const inputMap = this.inputMapQueue[0];
-        this.command.displacement = Vector3.Zero();
-        this.idle = true;
+    listenInput(inputMap: object) {
         if (inputMap["w"]) {
             this.command.displacement.addInPlace(Vector3.Forward());
             this.player.stopAllAnimationsExcept(this.walkingFAnim);
@@ -44,7 +41,6 @@ export default class AnimatedController extends PlayerController {
             this.player.stopAllAnimationsExcept(this.walkingBAnim);
             this.idle = false;
         }
-
         if (inputMap["d"]) {
             this.command.displacement.addInPlace(Vector3.Right());
             this.player.stopAllAnimationsExcept(this.walkingRAnim);
@@ -58,8 +54,5 @@ export default class AnimatedController extends PlayerController {
         if (this.idle) {
             this.player.stopAllAnimationsExcept(this.idleAnim);
         }
-        this.inputMapQueue.unshift(inputMap);
-
-        this.move(this.player.cam.camObj.position);
     }
 }

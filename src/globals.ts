@@ -19,6 +19,7 @@ const FPS_COUNT_: number = 60;
 //Time step or latency
 const TIME_STEP_: number = 1 / FPS_COUNT_;
 const GRAVITY = new Vector3(0, -9.8, 0)
+const GRAVITY_MAG: number = 9.8
 
 
 const canvas: any = Singleton<any>(
@@ -41,6 +42,7 @@ export {
     FPS_COUNT_,
     TIME_STEP_,
     GRAVITY,
+    GRAVITY_MAG,
     SPRITESHEET_DIR,
     SPRITESHEET_MAP_DIR,
     PLAYER_IDLE,

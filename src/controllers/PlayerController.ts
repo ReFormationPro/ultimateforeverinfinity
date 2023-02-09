@@ -5,14 +5,8 @@ export default class PlayerController extends TestController {
   constructor(scene: Scene) {
     super(scene);
     this.command.test = false;
-    this.command.gravity.copyFrom(this.scene.gravity);
-    if (this.scene._physicsEngine !== undefined) {
-      this.scene._physicsEngine.setGravity(this.command.gravity);
-    }
   }
-  listenInput() {
-    const inputMap = this.inputMapQueue[0];
-    this.command.displacement = Vector3.Zero();
+  listenInput(inputMap: object) {
     if (inputMap["w"]) {
       this.command.displacement.addInPlace(Vector3.Forward());
     }
@@ -29,8 +23,5 @@ export default class PlayerController extends TestController {
     if (inputMap[" "]) {
       this.command.displacement.addInPlace(Vector3.Up());
     }
-    this.inputMapQueue.unshift(inputMap);
-
-    this.move(this.player.cam.camObj.position);
   }
 }

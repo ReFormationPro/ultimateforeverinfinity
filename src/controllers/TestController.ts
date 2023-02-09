@@ -1,4 +1,5 @@
-import { canvas } from "../globals";
+import { GRAVITY, canvas } from "../globals";
+import BaseScene from "../scenes/BaseScene";
 import { Controller } from "./Controller";
 import { Scene, IPhysicsEnginePlugin, Vector3, KeyboardInfo } from "babylonjs";
 export default class TestController extends Controller {
@@ -7,10 +8,6 @@ export default class TestController extends Controller {
       " "
     ]);
     this.command.test = true;
-    this.command.gravity = Vector3.Zero();
-    if (this.scene._physicsEngine !== undefined) {
-      this.scene._physicsEngine.setGravity(this.command.gravity);
-    }
   }
   //https://www.babylonjs-playground.com/#3EDS3A#96
   managePointerLock() {
@@ -54,10 +51,7 @@ export default class TestController extends Controller {
     );
   }
 
-  listenInput() {
-    const inputMap = this.inputMapQueue[0];
-    this.command.displacement = Vector3.Zero();
-
+  listenInput(inputMap: object) {
     if (inputMap["w"]) {
       this.command.displacement.addInPlace(Vector3.Forward());
     }
@@ -67,11 +61,9 @@ export default class TestController extends Controller {
     if (inputMap["s"]) {
       this.command.displacement.addInPlace(Vector3.Backward());
     }
-
     if (inputMap["d"]) {
       this.command.displacement.addInPlace(Vector3.Right());
     }
-
     if (inputMap[" "]) {
       this.command.displacement.addInPlace(Vector3.Up());
     }
@@ -79,21 +71,19 @@ export default class TestController extends Controller {
       this.command.displacement.addInPlace(Vector3.Down());
     }
     if (inputMap["g"]) {
-      if (this.command.gravity.equals(Vector3.Zero())) {
-        this.command.gravity.copyFrom(this.scene.gravity)
-      }
-      else {
-        this.command.gravity = Vector3.Zero();
-      }
-      this.scene._physicsEngine.setGravity(this.command.gravity);
+      this.player.calcGravity = !this.player.calcGravity;
     }
-    this.inputMapQueue.unshift(inputMap);
-
-    this.move(this.player.cam.camObj.position);
   };
-
-  setNegTarget(negTarget: Vector3) {
+  setNegTarget() {
     this.command.negTarget = Vector3.Zero();
-    this.command.negTarget.copyFrom(negTarget);
+    this.command.negTarget.copyFrom(this.player.cam.camObj.position);
+  }
+  calcUpVector() {
+    if (!this.scene.physicsEnabled || (<BaseScene>this.scene).gravityMagnitude === 0) {
+      this.command.up = Vector3.Up()
+    }
+    else {
+      this.command.up = this.player.gravity.negate().normalize();
+    }
   }
 }

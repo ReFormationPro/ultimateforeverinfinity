@@ -20,7 +20,7 @@ export default class UFICamera extends EntityObject {
     super(scene, "camera");
 
     this.camObj = new ArcRotateCamera(
-      "camera1",
+      this.name,
       BABYLON.Tools.ToRadians(90),
       BABYLON.Tools.ToRadians(90),
       0,

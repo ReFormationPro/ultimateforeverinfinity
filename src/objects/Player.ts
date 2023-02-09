@@ -32,7 +32,8 @@ export default class Player extends UFIPlane {
   addController(controller: Controller) {
     controller.player = this;
     this.scene.onBeforeRenderObservable.add(() => {
-      controller.listenInput();
+      controller.listen();
+      controller.move();
     });
     const playerController = <PlayerController>controller;
     if (

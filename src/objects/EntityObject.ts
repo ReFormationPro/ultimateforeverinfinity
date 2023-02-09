@@ -38,8 +38,9 @@ export default class EntityObject {
   //physics
   //https://grideasy.github.io/tutorials/Using_The_Physics_Engine#impostors
   static GROUND_HEIGHT: number = 0;
-
-  supportsPhysics: Boolean = false;
+  calcGravity: boolean = true;
+  gravity: Vector3 = undefined;
+  supportsPhysics: boolean = false;
   //animation
   animations: Array<UFIAnimation> = [];
   constructor(
@@ -49,7 +50,8 @@ export default class EntityObject {
     rotation: Vector3 = Vector3.Zero()
   ) {
     this.scene = scene;
-    this.name = `${prefix}${EntityObject.index++}`;
+    (<BaseScene>this.scene).entityObjects.push(this);
+    this.name = `${prefix}${++EntityObject.index}`;
     this.position = position;
     this.rotation = rotation;
     this.timer = new UFITimer(scene);
@@ -57,7 +59,7 @@ export default class EntityObject {
   }
   createCompundMesh() {
     // console.log(this.position);
-    this.compoundMesh = new Mesh("", this.scene);
+    this.compoundMesh = new Mesh(`compoundMesh${EntityObject.index}`, this.scene);
     this.compoundMesh.position = this.position;
     this.compoundMesh.rotation = this.rotation;
     this.compoundMesh.addChild(this.mesh);
@@ -65,7 +67,7 @@ export default class EntityObject {
   setCamera(camera: UFICamera) {
     this.cam = camera;
     this.cam.obj = this;
-    const camMesh: Mesh = new Mesh("camera", this.scene);
+    const camMesh: Mesh = new Mesh(`camMesh${EntityObject.index}`, this.scene);
     this.compoundMesh.addChild(camMesh);
     camMesh.position = Vector3.Zero();
     this.cam.camObj.lockedTarget = camMesh;
@@ -216,11 +218,17 @@ export default class EntityObject {
     //this removes the shaky behavior
     this.compoundMesh.physicsImpostor.physicsBody.angularDamping = 1;
   }
-  calcBackwardVector(negTarget: Vector3, yZero: boolean = true) {
-
+  calcBackwardVector(negTarget: Vector3, up: Vector3, projectOrthogonal: boolean = true) {
     const resVec: Vector3 = negTarget.subtract(this.compoundMesh.position);
-    if (yZero) {
-      resVec.y = 0;
+    if (projectOrthogonal) {
+      const costheta: number = Vector3.Dot(resVec, up);
+      resVec.subtractInPlace(
+        up.multiplyByFloats(
+          costheta,
+          costheta,
+          costheta
+        )
+      );
     }
     return resVec.normalize();
   }
@@ -237,8 +245,8 @@ export default class EntityObject {
     return unitResVec;
   }
   calcAxesRef(negTarget: Vector3, up: Vector3) {
-    const w = this.calcBackwardVector(negTarget);
     const v = up;
+    const w = this.calcBackwardVector(negTarget, v);
     const u = this.calcRightVector(w, v);
     return [u, v, w]
   }
@@ -280,6 +288,7 @@ export default class EntityObject {
       return;
     }
     const [u, v, w] = this.calcAxesRef(command.negTarget, command.up);
+    //ALIGN
     const velocityOnUWPlane = this.calcVelocityOnUWPlane(command.displacement, u, w);
     const velocityOnV = this.calcVelocityOnV(command.displacement, v);
 
@@ -297,7 +306,7 @@ export default class EntityObject {
       if (jumpCollider === undefined) {
         throw TypeError("jumpCollider is undefined");
       }
-      if (jumpCollider.onObject || (command.test && command.gravity.equals(Vector3.Zero()))) {
+      if (jumpCollider.onObject || (command.test && (<BaseScene>this.scene).gravityMagnitude === 0)) {
         this.jumpsLeft = this.jumpCount;
       }
       if (this.jumpsLeft > 0 && command.displacement.y !== 0) {
@@ -314,10 +323,10 @@ export default class EntityObject {
         this.compoundMesh.physicsImpostor.setLinearVelocity(velocityOnUWPlane.add(currVelocity));
       }
       else {
-        if (jumpCollider.onObject || (command.test && command.gravity.equals(Vector3.Zero()))) {
+        if (jumpCollider.onObject || (command.test && (<BaseScene>this.scene).gravityMagnitude === 0)) {
           this.compoundMesh.physicsImpostor.sleep();
         }
-        if (command.test && !command.gravity.equals(Vector3.Zero())) {
+        if (command.test && (<BaseScene>this.scene).gravityMagnitude !== 0) {
           this.compoundMesh.physicsImpostor.wakeUp();
         }
         const currVelocity = this.compoundMesh.physicsImpostor.getLinearVelocity();
