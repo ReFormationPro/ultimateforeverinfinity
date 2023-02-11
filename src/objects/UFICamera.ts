@@ -1,5 +1,6 @@
+import { canvas } from "../globals";
 import EntityObject from "./EntityObject";
-import { Scene, Tools, ArcRotateCamera, Vector3 } from "babylonjs";
+import { Scene, Tools, ArcRotateCamera, Vector3, UniversalCamera } from "babylonjs";
 export default class UFICamera extends EntityObject {
   camObj: ArcRotateCamera = undefined;
   obj: EntityObject;
@@ -13,7 +14,7 @@ export default class UFICamera extends EntityObject {
     lowerBetaLimitDegrees = 45,
     upperBetaLimitDegrees = 135,
     lowerRadiusLimit = 5,
-    upperRadiusLimit = 25,
+    upperRadiusLimit = 100,
     angularSensibilityX = 500,
     angularSensibilityY = 500,
   ) {

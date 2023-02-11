@@ -3,7 +3,7 @@ import TestController from "../controllers/TestController";
 import Player from "../objects/Player";
 import * as CANNON from "cannon";
 import EntityObject from "../objects/EntityObject";
-import { FPS_COUNT_, GRAVITY, TIME_STEP_, engine } from "../globals";
+import { TIME_STEP_, engine } from "../globals";
 export default class BaseScene extends Scene {
   pass: number = 1;
   physEngine: IPhysicsEnginePlugin = undefined;
@@ -26,8 +26,10 @@ export default class BaseScene extends Scene {
         if (entityObject.calcGravity) {
           entityObject.gravity = this.calcGravity(entityObject);
           if (entityObject.gravity !== undefined) {
-            console.log(entityObject.gravity);
-
+            if (entityObject.once2) {
+              console.log(entityObject.gravity);
+              entityObject.once2 = false;
+            }
             entityObject.compoundMesh.physicsImpostor.applyForce(
               entityObject.gravity, entityObject.compoundMesh.position
             );
@@ -37,6 +39,6 @@ export default class BaseScene extends Scene {
     })
   }
   calcGravity(_: EntityObject) {
-    return Vector3.Zero();
+    return Vector3.Down();
   }
 }

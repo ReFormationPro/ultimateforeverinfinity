@@ -15,13 +15,14 @@ export default class Player extends UFIPlane {
     scene: Scene,
     width: number = 1,
     height: number = 1,
-    position: Vector3 = new Vector3(0, height / 2, 0),
-    rotation: Vector3 = new Vector3(0, 0, 0),
+    position: Vector3 = Vector3.Zero(),
+    up: Vector3 = Vector3.Up(),
+    target: Vector3 = Vector3.Forward(),
     speed: number = 10,
     jumpSpeed: number = speed,
     jumpCount: number = 2
   ) {
-    super(scene, width, height, position, rotation, true);
+    super(scene, width, height, position, up, target, true);
     // console.log(`url: ${url}`);
     //units per second
     this.speed = speed;
@@ -30,11 +31,8 @@ export default class Player extends UFIPlane {
     this.mesh.isPickable = false;
   }
   addController(controller: Controller) {
-    controller.player = this;
-    this.scene.onBeforeRenderObservable.add(() => {
-      controller.listen();
-      controller.move();
-    });
+    controller.entityObject = this;
+    controller.addEventListeners();
     const playerController = <PlayerController>controller;
     if (
       playerController.managePointerLock !== undefined &&

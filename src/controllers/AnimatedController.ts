@@ -28,22 +28,22 @@ export default class AnimatedController extends PlayerController {
     listenInput(inputMap: object) {
         if (inputMap["w"]) {
             this.command.displacement.addInPlace(Vector3.Forward());
-            this.player.stopAllAnimationsExcept(this.walkingFAnim);
+            this.entityObject.stopAllAnimationsExcept(this.walkingFAnim);
             this.idle = false;
         }
         if (inputMap["a"]) {
             this.command.displacement.addInPlace(Vector3.Left());
-            this.player.stopAllAnimationsExcept(this.walkingLAnim);
+            this.entityObject.stopAllAnimationsExcept(this.walkingLAnim);
             this.idle = false;
         }
         if (inputMap["s"]) {
             this.command.displacement.addInPlace(Vector3.Backward());
-            this.player.stopAllAnimationsExcept(this.walkingBAnim);
+            this.entityObject.stopAllAnimationsExcept(this.walkingBAnim);
             this.idle = false;
         }
         if (inputMap["d"]) {
             this.command.displacement.addInPlace(Vector3.Right());
-            this.player.stopAllAnimationsExcept(this.walkingRAnim);
+            this.entityObject.stopAllAnimationsExcept(this.walkingRAnim);
             this.idle = false;
         }
         if (inputMap[" "]) {
@@ -52,7 +52,7 @@ export default class AnimatedController extends PlayerController {
             this.idle = false;
         }
         if (this.idle) {
-            this.player.stopAllAnimationsExcept(this.idleAnim);
+            this.entityObject.stopAllAnimationsExcept(this.idleAnim);
         }
     }
 }

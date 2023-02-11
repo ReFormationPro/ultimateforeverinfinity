@@ -11,7 +11,6 @@ import { Controller } from "../controllers/Controller";
 import PlayerController from "../controllers/PlayerController";
 import {
   GRAVITY,
-  GRAVITY_MAG,
   PLAYER_IDLE,
   canvas,
 } from "../globals";
@@ -28,7 +27,10 @@ export default class TestScene2 extends BaseScene {
   constructor() {
     super();
     //CREATE OBJECTS
-    this.player = new Player(this, 1, 1, new Vector3(0, -20, 0));
+    this.player = new Player(this, 1, 1, new Vector3(60, 0, 0), Vector3.Left());
+
+    //let dummy = new UFIPlane(this, 6, 8, new Vector3(10, 60, 0), Vector3.Left(), this.player.position, true);
+
     console.log(`this.player.compoundMesh.position:${this.player.compoundMesh.position}`);
 
     // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
@@ -39,30 +41,34 @@ export default class TestScene2 extends BaseScene {
     this.player.setCamera(camera);
     this.player.setDynamicTexture();
 
-    let ball = new UFISphere(this, 10, 4);
-    ball.position = Vector3.Zero();
+    let ball = new UFISphere(this, 100, 0);
 
     this.player.setCollider(
-      new BoxCollider(
+      new JumpCollider(
         this,
-        this.player.width,
         this.player.height,
-        .5,
-        null,
-        null,
         Color3.Blue()
       )
+      // new BoxCollider(
+      //   this,
+      //   this.player.width,
+      //   this.player.height,
+      //   .5,
+      //   Color3.Blue()
+      // )
     );
     //GRAVITATIONAL PTS
     this.gravityPts = [
       ball.position
     ];
     //ENABLE PHYSICS
-    this.addPhysics(GRAVITY_MAG);
+    this.addPhysics(GRAVITY);
     this.player.addPhysics(1);
+    // dummy.addPhysics(0);
     ball.addPhysics(0, 0, 0, PhysicsImpostor.SphereImpostor);
     //CONTROLLER
     this.controller = new TestController(this);
+
     this.player.drawDynamicTexture(PLAYER_IDLE);
     // this.controller = new PlayerController(this, canvas);
     // this.controller = new AnimatedController(
@@ -103,7 +109,7 @@ export default class TestScene2 extends BaseScene {
       const currPos = entityObject.compoundMesh.position;
       if (this.gravityPts.indexOf(currPos) === -1) {
         if (currPos === undefined) {
-          Error("The compound mesh has undefined coordinates.")
+          throw Error("The compound mesh has undefined coordinates.")
         }
         // Normally there could be multiple objects pulling.
         return this.gravityPts[0].subtract(currPos).normalize().multiplyByFloats(

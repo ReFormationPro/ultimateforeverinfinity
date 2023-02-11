@@ -1,12 +1,6 @@
 import { Vector3, Scene, ActionManager, ExecuteCodeAction, IPhysicsEnginePlugin, KeyboardInfo } from "babylonjs";
 export class UFICommand {
   displacement: Vector3 = Vector3.Zero();
-  gravity: Vector3 = Vector3.Zero();
-  prevGravity: Vector3 = Vector3.Zero();
-  // A coordinate in the opposite direction of the target
-  negTarget: Vector3;
-  // current up vector
-  up: Vector3;
   test: boolean = false;
 }
 import Player from "../objects/Player";
@@ -14,7 +8,7 @@ import BaseScene from "../scenes/BaseScene";
 export abstract class Controller {
 
   command: UFICommand;
-  player: Player;
+  entityObject: Player;
   inputMapQueue: Array<object> = [{}, {}];
   singleTypeKeys: Array<string>
   scene: Scene;
@@ -80,14 +74,16 @@ export abstract class Controller {
     this.listenInput(inputMap);
     this.inputMapQueue.unshift(inputMap);
   }
-  move() {
-    this.setNegTarget();
-    this.calcUpVector();
-    this.player.move(this.command);
+  addEventListeners() {
+    this.scene.onBeforeRenderObservable.add(() => {
+      this.listen();
+      this.entityObject.alignAndMove(this.command);
+    });
+    // this.addCameraControls();
   }
-  rotate() { }
   // children should implement these
   setNegTarget() { }
   calcUpVector() { }
   listenInput(inputMap: object) { }
+  addCameraControls() { }
 }

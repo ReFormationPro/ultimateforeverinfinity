@@ -18,8 +18,7 @@ import Singleton from "./objects/Singleton";
 const FPS_COUNT_: number = 60;
 //Time step or latency
 const TIME_STEP_: number = 1 / FPS_COUNT_;
-const GRAVITY = new Vector3(0, -9.8, 0)
-const GRAVITY_MAG: number = 9.8
+const GRAVITY: number = 9.8
 
 
 const canvas: any = Singleton<any>(
@@ -35,14 +34,13 @@ if (Engine.isSupported()) {
     );
 }
 else {
-    Error("Engine is not supported. Babylon cannot find a WebGL context.")
+    throw Error("Engine is not supported. Babylon cannot find a WebGL context.")
 }
 
 export {
     FPS_COUNT_,
     TIME_STEP_,
     GRAVITY,
-    GRAVITY_MAG,
     SPRITESHEET_DIR,
     SPRITESHEET_MAP_DIR,
     PLAYER_IDLE,

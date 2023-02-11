@@ -1,8 +1,9 @@
 import { GRAVITY, canvas } from "../globals";
 import BaseScene from "../scenes/BaseScene";
 import { Controller } from "./Controller";
-import { Scene, IPhysicsEnginePlugin, Vector3, KeyboardInfo } from "babylonjs";
+import { Scene, IPhysicsEnginePlugin, Vector3, KeyboardInfo, Vector2, Quaternion } from "babylonjs";
 export default class TestController extends Controller {
+  mousePos: Vector2 = Vector2.Zero();
   constructor(scene: Scene) {
     super(scene, [
       " "
@@ -15,6 +16,8 @@ export default class TestController extends Controller {
     let isLocked = false;
     this.scene.onPointerDown = (evt) => {
       if (!isLocked) {
+        this.mousePos = new Vector2(evt.x, evt.y);
+
         canvas.requestPointerLock =
           canvas.requestPointerLock ||
           canvas.msRequestPointerLock ||
@@ -51,6 +54,13 @@ export default class TestController extends Controller {
     );
   }
 
+  addCameraControls() {
+    canvas.addEventListener("mousemove", (event: MouseEvent) => {
+      const currMousePos = new Vector2(event.x, event.y);
+      const deltaMousePos = currMousePos.subtract(this.mousePos);
+    })
+  }
+
   listenInput(inputMap: object) {
     if (inputMap["w"]) {
       this.command.displacement.addInPlace(Vector3.Forward());
@@ -71,19 +81,7 @@ export default class TestController extends Controller {
       this.command.displacement.addInPlace(Vector3.Down());
     }
     if (inputMap["g"]) {
-      this.player.calcGravity = !this.player.calcGravity;
+      this.entityObject.calcGravity = !this.entityObject.calcGravity;
     }
   };
-  setNegTarget() {
-    this.command.negTarget = Vector3.Zero();
-    this.command.negTarget.copyFrom(this.player.cam.camObj.position);
-  }
-  calcUpVector() {
-    if (!this.scene.physicsEnabled || (<BaseScene>this.scene).gravityMagnitude === 0) {
-      this.command.up = Vector3.Up()
-    }
-    else {
-      this.command.up = this.player.gravity.negate().normalize();
-    }
-  }
 }

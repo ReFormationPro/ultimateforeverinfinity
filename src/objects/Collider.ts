@@ -6,7 +6,8 @@ import {
   Color3,
   StandardMaterial,
   Ray,
-  RayHelper
+  RayHelper,
+  Quaternion
 } from "babylonjs";
 import EntityObject from "./EntityObject";
 import Player from "./Player";
@@ -18,16 +19,17 @@ export class Collider extends EntityObject {
   highlightColor: Color3;
   constructor(
     scene: Scene,
-    position: Vector3 = null,
-    rotation: Vector3 = null,
+    position: Vector3 = Vector3.Zero(),
+    up: Vector3 = null,
+    target: Vector3 = null,
     highlightColor: Color3 = null
   ) {
-    super(scene, "collider", position, rotation);
+    super(scene, "collider", position, up, target);
     this.highlightColor = highlightColor;
   }
   createMaterialIfNull() {
     if (this.mesh.material === undefined || this.mesh.material === null) {
-      const colliderMat = new StandardMaterial("Mesh Material", this.scene);
+      const colliderMat = new StandardMaterial(`MeshMaterial${EntityObject.index}`, this.scene);
       if (this.highlightColor === null) {
         colliderMat.alpha = 0;
       }
@@ -39,11 +41,14 @@ export class Collider extends EntityObject {
       this.mesh.material = colliderMat;
     }
   }
+  setPosition() {
+    this.mesh.position = this.position;
+  }
   activate() {
+    this.setPosition();
     this.createMaterialIfNull();
   }
   createMesh() { }
-  setMeshPosition() { }
 }
 
 export class JumpCollider extends Collider {
@@ -59,12 +64,13 @@ export class JumpCollider extends Collider {
   constructor(
     scene: Scene,
     height: number,
-    position: Vector3 = null,
-    rotation: Vector3 = null,
     highlightColor: Color3 = null,
+    position: Vector3 = Vector3.Zero(),
+    up: Vector3 = null,
+    target: Vector3 = null,
     risingDuration: number = 5
   ) {
-    super(scene, position, rotation, highlightColor);
+    super(scene, position, up, target, highlightColor);
     this.height = height;
     this.risingDuration = risingDuration * 1000;
     this.time = 0;
@@ -83,9 +89,9 @@ export class JumpCollider extends Collider {
     this.rayHelper = new RayHelper(this.ray);
     this.rayHelper.attachToMesh(
       this.obj.mesh,
-      Vector3.Down(),
-      new Vector3(0, -JumpCollider.LAMBDA, 0),
-      this.height / 2
+      this.obj.gravity,
+      Vector3.Zero(),
+      (this.height / 2) + JumpCollider.LAMBDA
     );
     if (this.highlightColor !== null) {
       this.rayHelper.show(this.scene, this.highlightColor);
@@ -99,9 +105,14 @@ export class JumpCollider extends Collider {
       }
     });
   }
-
   createMesh() {
     this.addRayDown();
+  }
+  align() {
+    // this.mesh.rotationQuaternion = (
+    //   this.negTarget === null ||
+    //   this.v === null
+    // ) ? Quaternion.Identity() : this.alignMatrix();
   }
 }
 
@@ -114,11 +125,12 @@ export class BoxCollider extends JumpCollider {
     width: number,
     height: number,
     depth: number,
-    position: Vector3 = null,
-    rotation: Vector3 = null,
     highlightColor: Color3 = null,
+    position: Vector3 = Vector3.Zero(),
+    up: Vector3 = null,
+    target: Vector3 = null,
   ) {
-    super(scene, height, position, rotation, highlightColor);
+    super(scene, height, highlightColor, position, up, target);
 
     this.width = width;
     this.depth = depth;
@@ -132,8 +144,5 @@ export class BoxCollider extends JumpCollider {
     });
 
     this.mesh.isPickable = false;
-  }
-  setMeshPosition() {
-    this.mesh.position = (this.position === null) ? Vector3.Zero() : this.position;
   }
 }

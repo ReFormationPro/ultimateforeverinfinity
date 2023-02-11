@@ -12,16 +12,16 @@ export default class UFIPlane extends EntityObject {
     width: number,
     height: number,
     position: Vector3 = Vector3.Zero(),
-    rotation: Vector3 = Vector3.Zero(),
+    up: Vector3 = Vector3.Up(),
+    target: Vector3 = Vector3.Forward(),
     isFacing: boolean = false
   ) {
-    super(scene, "plane", position, rotation);
+    super(scene, "plane", position, up, target);
     this.width = width;
     this.height = height;
     this.createMesh();
     if (isFacing) {
-      // This makes it always face the camera
-      this.mesh.billboardMode = Mesh.BILLBOARDMODE_Y;
+      this.mesh.billboardMode = Mesh.BILLBOARDMODE_ALL;
     }
   }
   createMesh() {
@@ -29,10 +29,7 @@ export default class UFIPlane extends EntityObject {
       width: this.width,
       height: this.height
     });
-    // console.log(this.position);
 
     this.createCompundMesh();
-    this.mesh.position = Vector3.Zero();
-    // this.mesh.rotation = this.rotation;
   }
 }
