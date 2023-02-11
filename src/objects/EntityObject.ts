@@ -180,22 +180,25 @@ export default class EntityObject {
     //this removes the shaky behavior
     this.compoundMesh.physicsImpostor.physicsBody.angularDamping = 1;
   }
-  calcBackwardVector(projectOrthogonal: boolean = false) {
-    const resVec: Vector3 = this.negTarget.subtract(this.compoundMesh.position);
-    // if (projectOrthogonal) {
-    //   const costheta: number = Vector3.Dot(resVec, this.v);
-    //   resVec.subtractInPlace(
-    //     this.v.multiplyByFloats(
-    //       costheta,
-    //       costheta,
-    //       costheta
-    //     )
-    //   );
-    // }
+  calcUpVector() {
+    return (!this.scene.physicsEnabled || (<BaseScene>this.scene).gravityMagnitude === 0) ? this.up.normalize() : this.gravity.negate().normalize();
+  }
+  calcBackwardVector(projectOrthogonal: boolean = true) {
+    const resVec: Vector3 = this.negTarget.subtract(this.compoundMesh.position).normalize();
+    if (projectOrthogonal) {
+      const costheta: number = Vector3.Dot(resVec, this.v);
+      resVec.subtractInPlace(
+        this.v.multiplyByFloats(
+          costheta,
+          costheta,
+          costheta
+        )
+      );
+    }
     return resVec.normalize();
   }
   calcRightVector(): Vector3 {
-    return Vector3.Cross(this.v, this.w);
+    return Vector3.Cross(this.w, this.v);
   }
   calcAnOrthogonal(forwardVector: Vector3) {
     const resVec: Vector3 = Vector3.Zero(),
@@ -247,21 +250,12 @@ export default class EntityObject {
     this.negTarget = Vector3.Zero();
     this.negTarget.copyFrom(this.cam.camObj.position);
   }
-  calcUpVector() {
-    return (!this.scene.physicsEnabled || (<BaseScene>this.scene).gravityMagnitude === 0) ? this.up : this.gravity.negate().normalize();
-  }
+  printTimes: number = 1000;
   once: boolean = true;
-  once2: boolean = true;
   update() {
     this.setPosition();
     this.setNegTarget();
     this.calcAxesRef();
-    if (this.once) {
-      console.log(`u:${this.u}`);
-      console.log(`v:${this.v}`);
-      console.log(`w:${this.w}`);
-      this.once = false;
-    }
     this.align();
   }
   align() {
@@ -283,6 +277,12 @@ export default class EntityObject {
     const velocityOnUWPlane = this.calcVelocityOnUWPlane(command.displacement);
     const velocityOnV = this.calcVelocityOnV(command.displacement);
 
+    if (this.printTimes > 0) {
+      console.log(`velocityOnUWPlane:${velocityOnUWPlane}`);
+      console.log(`velocityOnV:${velocityOnV}`);
+      this.printTimes--;
+    }
+
     if (!this.scene.physicsEnabled) {
       throw Error("Physics are not enabled.")
     }
@@ -291,6 +291,8 @@ export default class EntityObject {
     if (jumpCollider === undefined) {
       throw Error("jumpCollider is undefined");
     }
+    //console.log(jumpCollider.onObject);
+
     if (jumpCollider.onObject || (command.test && (<BaseScene>this.scene).gravityMagnitude === 0)) {
       this.jumpsLeft = this.jumpCount;
     }

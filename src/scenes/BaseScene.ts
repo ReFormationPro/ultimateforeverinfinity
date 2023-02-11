@@ -26,11 +26,11 @@ export default class BaseScene extends Scene {
         if (entityObject.calcGravity) {
           entityObject.gravity = this.calcGravity(entityObject);
           if (entityObject.gravity !== undefined) {
-            if (entityObject.once2) {
+            if (entityObject.once) {
               console.log(entityObject.gravity);
-              entityObject.once2 = false;
+              entityObject.once = false;
             }
-            entityObject.compoundMesh.physicsImpostor.applyForce(
+            entityObject.compoundMesh.physicsImpostor.applyImpulse(
               entityObject.gravity, entityObject.compoundMesh.position
             );
           }

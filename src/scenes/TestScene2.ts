@@ -29,7 +29,7 @@ export default class TestScene2 extends BaseScene {
     //CREATE OBJECTS
     this.player = new Player(this, 1, 1, new Vector3(60, 0, 0), Vector3.Left());
 
-    //let dummy = new UFIPlane(this, 6, 8, new Vector3(10, 60, 0), Vector3.Left(), this.player.position, true);
+    let dummy = new UFIPlane(this, 6, 8, new Vector3(60, 10, 0), Vector3.Left(), this.player.position, true);
 
     console.log(`this.player.compoundMesh.position:${this.player.compoundMesh.position}`);
 
@@ -64,7 +64,7 @@ export default class TestScene2 extends BaseScene {
     //ENABLE PHYSICS
     this.addPhysics(GRAVITY);
     this.player.addPhysics(1);
-    // dummy.addPhysics(0);
+    dummy.addPhysics(1);
     ball.addPhysics(0, 0, 0, PhysicsImpostor.SphereImpostor);
     //CONTROLLER
     this.controller = new TestController(this);
