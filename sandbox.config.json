@@ -1,8 +1,0 @@
-{
-  "infiniteLoopProtection": true,
-  "hardReloadOnChange": false,
-  "view": "browser",
-  "disableLogging": false,
-  "template": "parcel",
-  "startScript": "cs_start"
-}
