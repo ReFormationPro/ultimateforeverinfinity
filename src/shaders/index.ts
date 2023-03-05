@@ -197,10 +197,15 @@ BABYLON.Effect.ShadersStore.shaderToyPixelShader = `
 
 `;
 
-export const shaderToyMaterial =  (scene): any => {
-    return new BABYLON.StandardMaterial("shaderToyMat", scene);
+export const shaderToyMaterial = (scene): any => {
+  return new BABYLON.StandardMaterial("shaderToyMat", scene);
 };
 
-export const shaderToyProcText =  (scene): any => {
-    return new BABYLON.CustomProceduralTexture("shaderToytext", "shaderToy", 512, scene);
+export const shaderToyProcText = (scene): any => {
+  return new BABYLON.CustomProceduralTexture(
+    "shaderToytext",
+    "shaderToy",
+    512,
+    scene
+  );
 };

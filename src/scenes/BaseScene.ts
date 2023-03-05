@@ -1,10 +1,13 @@
-import { CannonJSPlugin, Engine, IPhysicsEnginePlugin, Scene, Vector3 } from "babylonjs";
-import Controller, { UFICommand } from "../controllers/Controller";
-import TestController from "../controllers/TestController";
-import Player from "../objects/Player";
+import {
+  CannonJSPlugin,
+  Engine,
+  IPhysicsEnginePlugin,
+  Scene,
+  Vector3,
+} from "babylonjs";
 import * as CANNON from "cannon";
-import EntityObject from "../objects/EntityObject";
-import { FPS_COUNT_, GRAVITY, TIME_STEP_ } from "../globals";
+import { TIME_STEP_ } from "../globals";
+
 export default class BaseScene extends Scene {
   pass: number = 1;
   physEngine: IPhysicsEnginePlugin;
@@ -19,5 +22,4 @@ export default class BaseScene extends Scene {
     this.enablePhysics(gravity, this.physEngine);
     this.physEngine.setTimeStep(TIME_STEP_);
   }
-
 }

@@ -6,7 +6,7 @@ export const start = async () => {
     const canvas: any = document.getElementById("canvas");
     const engine = new Engine(canvas, true, {
       deterministicLockstep: true,
-      lockstepMaxSteps: 4
+      lockstepMaxSteps: 4,
     });
 
     const scene = new TestScene(engine, canvas);
